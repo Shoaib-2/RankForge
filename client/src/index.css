@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.react-datepicker-wrapper {
+    width: 100%;
+  }
+  
+  @media (min-width: 640px) {
+    .react-datepicker-wrapper {
+      width: auto;
+    }
+  }
+  
+  .react-datepicker__input-container input {
+    width: 100%;
+  }
+  
+  @media (min-width: 640px) {
+    .react-datepicker__input-container input {
+      width: auto;
+    }
+  }
