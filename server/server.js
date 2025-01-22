@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -37,13 +38,50 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+// MongoDB Connection
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
 
+async function connectToMongoDB() {
+  try {
+    // Connect using Mongoose
+    await mongoose.connect(uri);
+    console.log('Connected to MongoDB via Mongoose');
+
+    // Also connect using MongoClient for ping test
+    await client.connect();
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  }
+}
+
+// Initialize server and database connection
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+
+connectToMongoDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}).catch(console.dir);
+
+// Handle process termination
+process.on('SIGINT', async () => {
+  try {
+    await client.close();
+    await mongoose.connection.close();
+    console.log('MongoDB connections closed.');
+    process.exit(0);
+  } catch (err) {
+    console.error('Error during cleanup:', err);
+    process.exit(1);
+  }
 });
