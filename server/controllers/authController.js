@@ -90,7 +90,32 @@ const authController = {
         error: error.message,
       });
     }
+  },
+
+  // Reset password
+  async forgotPassword(req, res) {
+    try {
+      const { email, newPassword } = req.body;
+      
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      user.password = newPassword;
+      await user.save();
+      console.log('Password updated successfully');
+  
+      res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+      console.error('Password reset error:', error);
+      res.status(500).json({ 
+        message: 'Error resetting password',
+        error: error.message 
+      });
+    }
   }
 };
+
 
 module.exports = authController;

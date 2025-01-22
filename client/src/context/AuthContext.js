@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+
   useEffect(() => {
     const initializeAuth = () => {
       const user = authService.getCurrentUser();
@@ -28,6 +29,12 @@ export const AuthProvider = ({ children }) => {
     return response;
   };
 
+  const resetPassword = async ({ email, newPassword }) => {
+    const response = await authService.resetPassword({ email, newPassword });
+    return response;
+  };
+
+
   const logout = () => {
     authService.logout();
     setUser(null);
@@ -38,6 +45,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    resetPassword,
     loading
   };
 

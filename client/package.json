@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@heroicons/react": "^1.0.6",
     "@reduxjs/toolkit": "^2.5.0",
     "axios": "^1.7.9",
     "client": "file:",
     "cra-template": "1.2.0",
+    "lucide-react": "^0.473.0",
     "react": "^19.0.0",
     "react-datepicker": "^7.6.0",
     "react-dom": "^19.0.0",

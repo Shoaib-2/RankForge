@@ -9,6 +9,7 @@ import SEOAnalysisPage from './compnents/pages/SEOAnalysisPage';
 import KeywordsPage from './compnents/pages/KeywordsPage';
 import ProtectedRoute from './compnents/auth/ProtectedRoute';
 import { SEOProvider } from './context/SeoContext';
+import ForgotPassword from './compnents/auth/forgotPassword';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/register" element={<Register />} />
           
           {/* Protected routes */}

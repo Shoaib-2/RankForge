@@ -12,6 +12,8 @@ const authService = {
     return response.data;
   },
 
+
+
   async login(credentials) {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, credentials);
@@ -24,6 +26,14 @@ const authService = {
       console.error('Login error:', error.response?.data || error.message);
       throw error;
     }
+  },
+
+  async resetPassword({ email, newPassword }) {
+    const response = await axios.post(`${API_URL}/auth/forgot-password`, {
+      email,
+      newPassword
+    });
+    return response.data;
   },
 
   logout() {
