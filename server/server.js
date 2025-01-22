@@ -42,9 +42,6 @@ app.get('/api/health', (req, res) => {
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, {
   serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
   }
