@@ -7,9 +7,13 @@ const morgan = require('morgan');
 require('dotenv').config();
 
 const app = express();
+const corsOptions = {
+  origin: 'https://seo-tool-eta.vercel.app/', // Replace with your Vercel app URL
+  optionsSuccessStatus: 200
+};
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
