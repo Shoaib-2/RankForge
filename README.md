@@ -3,10 +3,11 @@ This project is a comprehensive SEO analysis tool that helps users analyze and o
 
 
 Table of Contents:
-Features
-Installation
-Usage
-Project Structure
+
+1)Features
+2)Installation
+3)Usage
+4w)Project Structure
 
 =================================================================
 Features:
