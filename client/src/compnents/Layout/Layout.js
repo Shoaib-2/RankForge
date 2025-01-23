@@ -57,7 +57,7 @@ const Layout = ({ children }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
             </svg>
               </button>
-            <span className="text-xl font-semibold text-gray-900">SEO Tool</span>
+            <span className="text-xl font-bold text-blue-700">SEO Tool</span>
             <div className="flex items-center">
             <button
               onClick={handleLogout}
