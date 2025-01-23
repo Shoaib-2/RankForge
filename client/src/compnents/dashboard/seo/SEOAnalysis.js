@@ -26,7 +26,7 @@ const SEOAnalysis = () => {
     try {
       const token = authService.getToken();
       const response = await axios.post(
-        'http://localhost:5000/api/seo/analyze',
+        'https://seotool-l1b5.onrender.com/api/seo/analyze',
         { url },
         {
           headers: { Authorization: `Bearer ${token}` }
