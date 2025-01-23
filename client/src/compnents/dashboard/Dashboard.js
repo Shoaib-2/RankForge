@@ -28,7 +28,7 @@ const Dashboard = () => {
       setLoading(true);
       setErrorMessage(null);
       const token = authService.getToken();
-      const response = await axios.get('http://localhost:5000/api/dashboard/stats', {
+      const response = await axios.get('https://seotool-l1b5.onrender.com/api/dashboard/stats', {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           startDate: dateRange.startDate.toISOString(),

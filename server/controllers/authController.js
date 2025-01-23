@@ -27,7 +27,7 @@ const authController = {
       const token = jwt.sign(
         { userId: user._id },
         process.env.JWT_SECRET,
-        { expiresIn: '24h' }
+        { expiresIn: '48h' }
       );
 
       res.status(201).json({

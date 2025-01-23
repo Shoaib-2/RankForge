@@ -46,7 +46,7 @@ const PageSpeedInsights = ({ pageSpeedData }) => {
             </h3>
             <div className="mt-2 flex items-baseline">
               <span className={`text-2xl font-semibold ${getScoreColor(data.score * 100)}`}>
-                {typeof data.value === 'number' ? data.value.toFixed(2) : data.value}
+                {typeof data.value === 'number' ? data.value.toFixed(1) : data.value}
               </span>
               <span className="ml-1 text-gray-500 text-sm">
                 {key.includes('Time') ? 'ms' : ''}

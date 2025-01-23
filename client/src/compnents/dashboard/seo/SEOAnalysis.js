@@ -77,7 +77,7 @@ const SEOAnalysis = () => {
                 name="url"
                 id="url"
                 className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                placeholder="https://example.com"
+                placeholder=""
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 required

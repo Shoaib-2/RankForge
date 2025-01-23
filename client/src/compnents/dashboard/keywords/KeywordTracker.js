@@ -16,7 +16,7 @@ const KeywordTracker = () => {
   const fetchKeywords = async () => {
     try {
       const token = authService.getToken();
-      const response = await axios.get('http://localhost:5000/api/keywords/list', {
+      const response = await axios.get('https://seotool-l1b5.onrender.com/api/keywords/list', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setKeywords(response.data);
@@ -30,7 +30,7 @@ const KeywordTracker = () => {
     try {
       setLoading(true);
       const token = authService.getToken();
-      await axios.post('http://localhost:5000/api/keywords/add', 
+      await axios.post('https://seotool-l1b5.onrender.com/api/keywords/add', 
         { keyword: newKeyword },
         { headers: { Authorization: `Bearer ${token}` }}
       );
@@ -46,7 +46,7 @@ const KeywordTracker = () => {
   const deleteKeyword = async (keywordId) => {
     try {
       const token = authService.getToken();
-      await axios.delete(`http://localhost:5000/api/keywords/${keywordId}`, {
+      await axios.delete(`https://seotool-l1b5.onrender.com/api/keywords/${keywordId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchKeywords();
