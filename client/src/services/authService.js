@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = "https://seotool-l1b5.onrender.com/api/auth";
 const authService = {
   async register(userData) {
     const response = await axios.post(`${API_URL}/auth/register`, userData);
