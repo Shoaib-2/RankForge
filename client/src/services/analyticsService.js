@@ -1,7 +1,7 @@
 import axios from 'axios';
 import authService from './authService';
 
-const API_URL = 'http://localhost:5000/api/analytics';
+const API_URL = 'https://seotool-l1b5.onrender.com/api/analytics';
 
 const analyticsService = {
   async getAnalyticsData() {
