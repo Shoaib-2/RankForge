@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = "https://seotool-l1b5.onrender.com/api/auth";
 const authService = {
   async register(userData) {
-    const response = await axios.post(`${API_URL}/auth/register`, userData);
+    const response = await axios.post(`${API_URL}/register`, userData);
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -15,7 +15,7 @@ const authService = {
 
   async login(credentials) {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, credentials);
+      const response = await axios.post(`${API_URL}/login`, credentials);
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -28,7 +28,7 @@ const authService = {
   },
 
   async resetPassword({ email, newPassword }) {
-    const response = await axios.post(`${API_URL}/auth/forgot-password`, {
+    const response = await axios.post(`${API_URL}/forgot-password`, {
       email,
       newPassword
     });
