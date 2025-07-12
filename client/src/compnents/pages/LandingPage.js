@@ -40,11 +40,7 @@ const LandingPage = () => {
             className="text-6xl md:text-8xl font-bold mb-6 text-gradient-minimal animate-float"
             style={{ 
               fontFamily: 'Orbitron, monospace',
-              letterSpacing: '0.05em',
-              background: 'linear-gradient(135deg, #00d9ff 0%, #8b5cf6 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              letterSpacing: '0.05em'
             }}
             whileHover={{ scale: 1.02 }}
             data-text="RANKFORGE"

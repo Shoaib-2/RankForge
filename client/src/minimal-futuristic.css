@@ -108,7 +108,7 @@
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
+}   
 
 /* Glass Effect without blur for Dashboard */
 .glass-no-blur {
@@ -164,12 +164,55 @@
   transition: box-shadow 0.3s ease;
 }
 
-/* Minimal Text Gradients */
+/* Minimal Text Gradients - Production Ready */
 .text-gradient-minimal {
+  /* Fallback color for browsers that don't support gradients */
+  color: #00d9ff;
+  
+  /* Gradient for supported browsers */
+  background: linear-gradient(135deg, #00d9ff 0%, #8b5cf6 100%);
+  background: -webkit-linear-gradient(135deg, #00d9ff 0%, #8b5cf6 100%);
+  background: -moz-linear-gradient(135deg, #00d9ff 0%, #8b5cf6 100%);
+  
+  /* Apply gradient to text */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -moz-background-clip: text;
+  -moz-text-fill-color: transparent;
+  background-clip: text;
+  
+  /* Ensure proper rendering */
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  
+  /* Force hardware acceleration for better performance */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Fallback for older browsers or when gradient fails */
+.text-gradient-minimal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: linear-gradient(135deg, #00d9ff 0%, #8b5cf6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  z-index: -1;
+}
+
+/* Ensure text is visible if gradient fails */
+@supports not (-webkit-background-clip: text) {
+  .text-gradient-minimal {
+    background: none !important;
+    color: #00d9ff !important;
+    -webkit-text-fill-color: #00d9ff !important;
+  }
 }
 
 .text-gradient {
