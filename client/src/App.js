@@ -12,6 +12,9 @@ import { SEOProvider } from './context/SeoContext';
 import ForgotPassword from './compnents/auth/forgotPassword';
 import LandingPage from './compnents/pages/LandingPage';
 
+// Import minimal futuristic styles
+import './minimal-futuristic.css';
+
 function App() {
   return (
     <AuthProvider>
