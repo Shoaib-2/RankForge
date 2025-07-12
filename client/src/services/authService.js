@@ -1,6 +1,10 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const API_URL = "https://seotool-l1b5.onrender.com/api/auth";
+// Load environment variables
+const API_URL = process.env.API_URL;
+
 const authService = {
   async register(userData) {
     const response = await axios.post(`${API_URL}/register`, userData);
