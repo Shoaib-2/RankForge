@@ -8,7 +8,7 @@ require('dotenv').config();
 
 const app = express();
 const corsOptions = {
-  origin: 'https://seo-tool-git-main-shoaib-2s-projects.vercel.app', // Replace with Vercel app URL.
+  origin: 'https://seo-tool-eta.vercel.app/', // Replace with Vercel app URL.
   optionsSuccessStatus: 200
 };
 
