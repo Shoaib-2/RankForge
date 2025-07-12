@@ -1,7 +1,7 @@
 import axios from 'axios';
 import authService from './authService';
 
-const API_URL = 'https://seotool-l1b5.onrender.com/api/seo';
+const API_URL = process.env.REACT_APP_API_URL || 'https://seotool-l1b5.onrender.com/api';
 
 const seoService = {
   /**
@@ -12,7 +12,7 @@ const seoService = {
   async analyzeSite(url) {
     const token = authService.getToken();
     const response = await axios.post(
-      `${API_URL}/analyze`,
+      `${API_URL}/seo/analyze`,
       { url },
       {
         headers: {
@@ -29,7 +29,7 @@ const seoService = {
    */
   async getAnalysisHistory() {
     const token = authService.getToken();
-    const response = await axios.get(`${API_URL}/history`, {
+    const response = await axios.get(`${API_URL}/seo/history`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
