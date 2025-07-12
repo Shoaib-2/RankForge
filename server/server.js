@@ -7,16 +7,35 @@ const morgan = require('morgan');
 require('dotenv').config();
 
 const app = express();
+
+// CORS configuration to allow frontend (Vercel) to communicate with backend (Render)
 const corsOptions = {
-  origin: 'https://seo-tool-eta.vercel.app/', // Replace with Vercel app URL.
-  optionsSuccessStatus: 200
+  origin: [
+    process.env.FRONTEND_URL, // Production frontend URL from environment variable
+    'https://seo-tool-eta.vercel.app', // Fallback without trailing slash
+    'http://localhost:3000', // Local development
+    'http://localhost:3001'  // Alternative local port
+  ],
+  credentials: true, // Allow cookies and authorization headers
+  optionsSuccessStatus: 200, // Support legacy browsers
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 };
 
 // Middleware
-app.use(cors(corsOptions));
-app.use(helmet());
-app.use(morgan('dev'));
-app.use(express.json());
+app.use(cors(corsOptions)); // Apply CORS configuration
+app.use(helmet()); // Security headers
+app.use(morgan('dev')); // Request logging
+app.use(express.json()); // Parse JSON bodies
+
+// Add preflight handling for complex CORS requests
+app.options('*', cors(corsOptions));
+
+// Debug middleware to log CORS requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin') || 'No Origin'}`);
+  next();
+});
 
 // Routes
 const authRoutes = require('./routes/auth');
