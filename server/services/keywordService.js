@@ -4,7 +4,7 @@ const googlePageSpeed = require('./googlePageSpeed');
 
 class KeywordService {
   constructor() {
-    this.GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || 'AIzaSyDOlKmUKU_cUFIa3SZDaYysc4OCX2KE-pQ';
+    this.GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
     this.SERP_API_BASE = 'https://serpapi.com/search';
     // Using Google's related searches and autocomplete APIs
     this.KEYWORD_TOOLS_API = 'https://suggestqueries.google.com/complete/search';
