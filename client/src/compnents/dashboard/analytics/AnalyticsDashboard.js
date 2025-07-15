@@ -327,7 +327,10 @@ const AnalyticsDashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ 
+          scale: 1.1,
+          transition: { duration: 0.1 }
+        }}
         >
           <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)' }}>
             <ArrowTrendingUpIcon className="w-6 h-6 text-white" />
@@ -343,7 +346,10 @@ const AnalyticsDashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ 
+          scale: 1.1,
+          transition: { duration: 0.1 }
+        }}
         >
           <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
             <UsersIcon className="w-6 h-6 text-white" />
@@ -359,7 +365,10 @@ const AnalyticsDashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ 
+          scale: 1.1,
+          transition: { duration: 0.1 }
+        }}
         >
           <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
             <EyeIcon className="w-6 h-6 text-white" />
@@ -375,7 +384,10 @@ const AnalyticsDashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.7 }}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ 
+          scale: 1.1,
+          transition: { duration: 0.1 }
+        }}
         >
           <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' }}>
             <HandRaisedIcon className="w-6 h-6 text-white" />

@@ -84,15 +84,16 @@ const Dashboard = () => {
 
   // Stat Card Component
   const StatCard = ({ title, value, change, suffix = '', loading, icon, gradient, delay = 0 }) => {
-    console.log(`StatCard ${title}:`, { value, change, loading });
-    
     return (
       <motion.div 
         className="stat-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay }}
-        whileHover={{ scale: 1.02 }}
+        whileHover={{ 
+          scale: 1.1,
+          transition: { duration: 0.1 }
+        }}
       >
         <div className="stat-card-icon" style={{ background: gradient }}>
           {icon}
@@ -248,12 +249,12 @@ const Dashboard = () => {
 
       {/* Analytics Section */}
       <motion.div 
-        className="chart-container"
+        className="chart-container mt-8"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
       >
-        <h2 className="chart-title">Analytics Overview</h2>
+        <h2 className="chart-title mb-6">Analytics Overview</h2>
         <AnalyticsDashboard />
       </motion.div>
     </div>
