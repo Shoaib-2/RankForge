@@ -21,10 +21,20 @@ const seoController = {
       // Calculate overall score
       const score = calculateOverallScore(analysisResults);
 
+      // Extract domain from URL
+      let domain;
+      try {
+        const urlObj = new URL(url);
+        domain = urlObj.hostname;
+      } catch (error) {
+        domain = 'unknown';
+      }
+
       // Prepare analysis data with proper structure
       const analysisData = {
         userId,
         url,
+        domain, // Add domain field
         score,
         analysis: {
           meta: {
@@ -135,18 +145,31 @@ const seoController = {
 function calculateOverallScore(analysisResults) {
   let score = 100;
   
-  const metaIssues = analysisResults.metaAnalysis.recommendations.length;
+  // Safely check for meta issues
+  const metaIssues = analysisResults?.metaAnalysis?.recommendations?.length || 0;
   score -= metaIssues * 5;
 
-  const contentIssues = analysisResults.contentAnalysis.recommendations.length;
+  // Safely check for content issues
+  const contentIssues = analysisResults?.contentAnalysis?.recommendations?.length || 0;
   score -= contentIssues * 5;
 
-  if (!analysisResults.technicalAnalysis.mobileResponsiveness.isMobileFriendly) {
+  // Safely check mobile responsiveness
+  const isMobileFriendly = analysisResults?.technicalAnalysis?.mobileResponsiveness?.isMobileFriendly;
+  if (isMobileFriendly === false) {
     score -= 15;
   }
-  score -= Math.max(0, (100 - analysisResults.technicalAnalysis.pageSpeed.score) * 0.15);
 
-  return Math.max(0, Math.min(100, Math.round(score)));
+  // Safely check page speed score
+  const pageSpeedScore = analysisResults?.technicalAnalysis?.pageSpeed?.score;
+  if (typeof pageSpeedScore === 'number' && !isNaN(pageSpeedScore)) {
+    score -= Math.max(0, (100 - pageSpeedScore) * 0.15);
+  }
+
+  // Ensure score is a valid number between 0 and 100
+  const finalScore = Math.max(0, Math.min(100, Math.round(score)));
+  
+  // If still NaN, default to 50
+  return isNaN(finalScore) ? 50 : finalScore;
 }
 
 function generateRecommendations(analysisResults) {

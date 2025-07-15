@@ -45,8 +45,11 @@ const authLimiter = rateLimit({
 const speedLimiter = slowDown({
   windowMs: 15 * 60 * 1000, // 15 minutes
   delayAfter: 500, // Allow first 500 requests per 15 minutes at full speed
-  delayMs: 500, // Add 500ms delay per request after delayAfter
+  delayMs: () => 500, // Fixed delay of 500ms per request after delayAfter (new v2 syntax)
   maxDelayMs: 20000, // Maximum delay of 20 seconds
+  validate: {
+    delayMs: false // Disable the warning message
+  },
   keyGenerator: (req) => {
     const forwarded = req.headers['x-forwarded-for'];
     const ip = forwarded ? forwarded.split(',')[0] : req.connection.remoteAddress;

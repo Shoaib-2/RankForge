@@ -6,6 +6,14 @@ class GooglePageSpeedService {
     // Google PageSpeed Insights API (free tier: 25,000 requests/day)
     this.apiKey = process.env.GOOGLE_PAGESPEED_API_KEY || null;
     this.baseUrl = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
+    
+    // Log API key status on initialization
+    if (this.apiKey) {
+      console.log('✅ Google PageSpeed API key configured - using real API data');
+    } else {
+      console.log('⚠️  No Google PageSpeed API key found - using mock data');
+      console.log('💡 Add GOOGLE_PAGESPEED_API_KEY to .env for real data');
+    }
   }
 
   async analyzePageSpeed(url) {
@@ -19,29 +27,74 @@ class GooglePageSpeedService {
 
       const results = {};
 
-      // Analyze for both mobile and desktop
-      for (const strategy of ['mobile', 'desktop']) {
-        const apiUrl = new URL(this.baseUrl);
-        apiUrl.searchParams.set('url', url);
-        apiUrl.searchParams.set('strategy', strategy);
-        apiUrl.searchParams.set('category', 'performance');
-        
-        // Add API key if available
-        if (this.apiKey) {
-          apiUrl.searchParams.set('key', this.apiKey);
-        }
-
-        console.log(`Analyzing PageSpeed for ${url} (${strategy})`);
-        
-        const response = await axios.get(apiUrl.toString(), {
-          timeout: 30000, // 30 seconds timeout
-          headers: {
-            'User-Agent': 'SEO-Tool/1.0'
+      // Try to analyze both strategies concurrently for better performance
+      const analysisPromises = ['mobile', 'desktop'].map(async (strategy) => {
+        try {
+          const apiUrl = new URL(this.baseUrl);
+          apiUrl.searchParams.set('url', url);
+          apiUrl.searchParams.set('strategy', strategy);
+          apiUrl.searchParams.set('category', 'performance');
+          
+          // Add API key if available
+          if (this.apiKey) {
+            apiUrl.searchParams.set('key', this.apiKey);
           }
-        });
 
-        results[strategy] = this.processPageSpeedData(response.data);
-      }
+          console.log(`Analyzing PageSpeed for ${url} (${strategy})`);
+          
+          if (this.apiKey) {
+            console.log('✅ Using Google API key for real data');
+          } else {
+            console.log('⚠️ No API key - using mock data');
+          }
+
+          // Try with retries for better reliability
+          let retries = 2;
+          let response;
+          
+          while (retries > 0) {
+            try {
+              response = await axios.get(apiUrl.toString(), {
+                timeout: 45000, // Increased to 45 seconds
+                headers: {
+                  'User-Agent': 'SEO-Tool/1.0'
+                }
+              });
+              break; // Success, exit retry loop
+            } catch (error) {
+              retries--;
+              if (retries === 0) throw error; // Last retry failed
+              
+              console.log(`⚠️ Retry ${2 - retries}/2 for ${strategy} strategy...`);
+              await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+            }
+          }
+
+          console.log(`✅ Google PageSpeed API response received for ${strategy}`);
+          return { strategy, data: this.processPageSpeedData(response.data) };
+          
+        } catch (error) {
+          console.error(`❌ Failed to analyze ${strategy} strategy:`, error.message);
+          // Return fallback data for this strategy
+          const fallbackData = this.getFallbackPageSpeedData();
+          return { strategy, data: fallbackData[strategy] };
+        }
+      });
+
+      // Wait for all analysis to complete (with individual error handling)
+      const analysisResults = await Promise.allSettled(analysisPromises);
+      
+      // Process results
+      analysisResults.forEach((result, index) => {
+        const strategy = ['mobile', 'desktop'][index];
+        if (result.status === 'fulfilled') {
+          results[result.value.strategy] = result.value.data;
+        } else {
+          console.error(`Failed ${strategy} analysis:`, result.reason);
+          const fallbackData = this.getFallbackPageSpeedData();
+          results[strategy] = fallbackData[strategy];
+        }
+      });
 
       const finalResult = {
         mobile: results.mobile,
@@ -57,9 +110,26 @@ class GooglePageSpeedService {
       return finalResult;
 
     } catch (error) {
-      console.error('Google PageSpeed API error:', error.message);
+      console.error('🚨 Google PageSpeed API error:', error.message);
+      console.error('Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        code: error.code,
+        timeout: error.code === 'ECONNABORTED'
+      });
+      
+      // Specific handling for different error types
+      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        console.log('⏰ API timeout - Google PageSpeed is slow for this site');
+      } else if (error.response?.status === 429) {
+        console.log('🚫 Rate limit exceeded - using cached/mock data');
+      } else if (error.response?.status >= 500) {
+        console.log('🔧 Google API server error - temporary issue');
+      }
       
       // Return fallback mock data if API fails
+      console.log('📄 Falling back to mock data due to API error');
       return this.getFallbackPageSpeedData();
     }
   }

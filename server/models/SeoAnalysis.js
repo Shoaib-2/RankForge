@@ -105,8 +105,8 @@ const seoAnalysisSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now,
-    index: true // Add index for date-based queries
+    default: Date.now
+    // Removed index: true to avoid duplicate with timestamps
   },
   processingTime: {
     type: Number, // Time taken to analyze in milliseconds
