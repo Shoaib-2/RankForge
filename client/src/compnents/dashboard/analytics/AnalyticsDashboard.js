@@ -1,401 +1,480 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 import analyticsService from '../../../services/analyticsService';
 import { 
   ChartBarIcon, 
-  UsersIcon, 
-  MagnifyingGlassIcon, 
-  ArrowTrendingUpIcon, 
-  EyeIcon, 
-  HandRaisedIcon 
+  DevicePhoneMobileIcon,
+  ComputerDesktopIcon,
+  BoltIcon
 } from '@heroicons/react/24/outline';
 
 const AnalyticsDashboard = () => {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState(30);
 
   useEffect(() => {
-    // Set demo data immediately for better UX
-    const mockData = {
-      data: {
-        pageViews: [
-          { date: '2024-01-01', count: 1250 },
-          { date: '2024-01-02', count: 1380 },
-          { date: '2024-01-03', count: 1150 },
-          { date: '2024-01-04', count: 1420 },
-          { date: '2024-01-05', count: 1680 },
-          { date: '2024-01-06', count: 1520 },
-          { date: '2024-01-07', count: 1750 }
-        ],
-        visitors: [
-          { date: '2024-01-01', count: 850 },
-          { date: '2024-01-02', count: 920 },
-          { date: '2024-01-03', count: 780 },
-          { date: '2024-01-04', count: 1050 },
-          { date: '2024-01-05', count: 1180 },
-          { date: '2024-01-06', count: 1020 },
-          { date: '2024-01-07', count: 1220 }
-        ],
-        searchImpressions: [
-          { date: '2024-01-01', count: 2400 },
-          { date: '2024-01-02', count: 2650 },
-          { date: '2024-01-03', count: 2200 },
-          { date: '2024-01-04', count: 2800 },
-          { date: '2024-01-05', count: 3100 },
-          { date: '2024-01-06', count: 2950 },
-          { date: '2024-01-07', count: 3300 }
-        ],
-        searchClicks: [
-          { date: '2024-01-01', count: 180 },
-          { date: '2024-01-02', count: 210 },
-          { date: '2024-01-03', count: 165 },
-          { date: '2024-01-04', count: 240 },
-          { date: '2024-01-05', count: 285 },
-          { date: '2024-01-06', count: 260 },
-          { date: '2024-01-07', count: 310 }
-        ]
-      }
-    };
-    
-    // Set demo data immediately
-    setAnalyticsData(mockData);
-    setLoading(false);
-    
-    // Then try to fetch real data
-    fetchAnalyticsData();
-  }, []);
+    fetchRealAnalytics();
+  }, [selectedPeriod]);
 
-  const fetchAnalyticsData = async () => {
+  const fetchRealAnalytics = async () => {
     try {
-      const data = await analyticsService.getAnalyticsData();
-      setAnalyticsData(data);
+      setLoading(true);
       setError('');
-    } catch (error) {
-      console.error('Analytics fetch error:', error);
-      setError('Using demo analytics data - API unavailable');
-      // Set mock analytics data
-      const mockData = {
-        data: {
-          pageViews: [
-            { date: '2024-01-01', count: 1250 },
-            { date: '2024-01-02', count: 1380 },
-            { date: '2024-01-03', count: 1150 },
-            { date: '2024-01-04', count: 1420 },
-            { date: '2024-01-05', count: 1680 },
-            { date: '2024-01-06', count: 1520 },
-            { date: '2024-01-07', count: 1750 }
-          ],
-          visitors: [
-            { date: '2024-01-01', count: 850 },
-            { date: '2024-01-02', count: 920 },
-            { date: '2024-01-03', count: 780 },
-            { date: '2024-01-04', count: 1050 },
-            { date: '2024-01-05', count: 1180 },
-            { date: '2024-01-06', count: 1020 },
-            { date: '2024-01-07', count: 1220 }
-          ],
-          searchImpressions: [
-            { date: '2024-01-01', count: 2400 },
-            { date: '2024-01-02', count: 2650 },
-            { date: '2024-01-03', count: 2200 },
-            { date: '2024-01-04', count: 2800 },
-            { date: '2024-01-05', count: 3100 },
-            { date: '2024-01-06', count: 2950 },
-            { date: '2024-01-07', count: 3300 }
-          ],
-          searchClicks: [
-            { date: '2024-01-01', count: 180 },
-            { date: '2024-01-02', count: 210 },
-            { date: '2024-01-03', count: 165 },
-            { date: '2024-01-04', count: 240 },
-            { date: '2024-01-05', count: 285 },
-            { date: '2024-01-06', count: 260 },
-            { date: '2024-01-07', count: 310 }
-          ]
-        }
-      };
-      setAnalyticsData(mockData);
+      const response = await analyticsService.getDashboardAnalytics(selectedPeriod);
+      
+      if (response.success && response.data.charts.seoScores.length > 0) {
+        setAnalyticsData(response.data);
+        setError('');
+      } else {
+        // Fallback to mock data if no real data available
+        setAnalyticsData(getMockAnalyticsData());
+        setError('📊 Demo data shown - analyze websites to see real performance trends');
+      }
+    } catch (err) {
+      console.error('Error fetching analytics:', err);
+      setError('📊 Demo data shown - analyze websites to see real performance trends');
+      // Fallback to mock data on error
+      setAnalyticsData(getMockAnalyticsData());
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString();
+  const getMockAnalyticsData = () => {
+    // Enhanced mock data for demo
+    const dates = [];
+    const today = new Date();
+    for (let i = selectedPeriod - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      dates.push(date.toISOString().split('T')[0]);
+    }
+
+    return {
+      charts: {
+        seoScores: dates.map((date, index) => ({
+          date,
+          value: Math.round(75 + Math.sin(index * 0.3) * 10 + Math.random() * 5)
+        })),
+        pageSpeedMobile: dates.map((date, index) => ({
+          date,
+          value: Math.round(70 + Math.sin(index * 0.25) * 8 + Math.random() * 4)
+        })),
+        pageSpeedDesktop: dates.map((date, index) => ({
+          date,
+          value: Math.round(85 + Math.sin(index * 0.2) * 6 + Math.random() * 3)
+        })),
+        coreWebVitals: {
+          lcp: dates.map((date, index) => ({
+            date,
+            value: parseFloat((2.5 + Math.sin(index * 0.15) * 0.5 + Math.random() * 0.2).toFixed(1))
+          })),
+          fid: dates.map((date, index) => ({
+            date,
+            value: Math.round(100 + Math.sin(index * 0.12) * 20 + Math.random() * 10)
+          })),
+          cls: dates.map((date, index) => ({
+            date,
+            value: parseFloat((0.1 + Math.sin(index * 0.1) * 0.03 + Math.random() * 0.01).toFixed(3))
+          }))
+        }
+      },
+      recentAnalyses: [
+        { domain: 'linkedin.com', seoScore: 85, mobileScore: 78, desktopScore: 92, date: new Date() },
+        { domain: 'github.com', seoScore: 72, mobileScore: 65, desktopScore: 85, date: new Date() }
+      ],
+      performanceMetrics: {
+        averageScores: { seo: 78, mobile: 71, desktop: 88 },
+        coreWebVitals: { lcp: 2.3, fid: 95, cls: 0.08 },
+        totalAnalyses: 25,
+        topDomains: [
+          { domain: 'linkedin.com', count: 8 },
+          { domain: 'github.com', count: 5 },
+          { domain: 'google.com', count: 3 }
+        ]
+      }
+    };
+  };
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const getScoreColor = (score) => {
+    if (score >= 90) return 'text-green-600';
+    if (score >= 75) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getCoreWebVitalStatus = (metric, value) => {
+    const thresholds = {
+      lcp: { good: 2.5, poor: 4.0 },
+      fid: { good: 100, poor: 300 },
+      cls: { good: 0.1, poor: 0.25 }
+    };
+    
+    const threshold = thresholds[metric];
+    if (value <= threshold.good) return 'good';
+    if (value <= threshold.poor) return 'needs-improvement';
+    return 'poor';
   };
 
   if (loading) {
     return (
-      <motion.div 
-        className="flex items-center justify-center h-64"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="flex items-center space-x-3 text-blue-600">
-          <motion.div 
-            className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          />
-          <span className="font-medium">Loading analytics...</span>
+      <div className="space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Error Display (if any) */}
+      {/* Header with Period Selection */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900">Performance Analytics</h2>
+        <div className="flex space-x-2">
+          {[7, 30, 90].map(days => (
+            <button
+              key={days}
+              onClick={() => setSelectedPeriod(days)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                selectedPeriod === days
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {days}d
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Error Message */}
       {error && (
-        <motion.div 
-          className="alert alert-info"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className="flex items-center">
-            <span className="text-xl mr-3">ℹ️</span>
-            <p className="font-medium">{error}</p>
-          </div>
-        </motion.div>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-blue-700 text-sm">{error}</p>
+        </div>
       )}
-      {/* Main Page Views Chart */}
-      <motion.div 
-        className="chart-container"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center">
-          <ChartBarIcon className="w-5 h-5 mr-2" />
-          Page Views Overview
-        </h3>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={analyticsData?.data?.pageViews}>
-              <defs>
-                <linearGradient id="pageViewsGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4a90e2" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#4a90e2" stopOpacity={0.05}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(74, 144, 226, 0.1)" />
+
+      {/* Performance Summary Cards */}
+      {analyticsData?.performanceMetrics && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-xl shadow-lg p-6"
+          >
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-blue-100">
+                <ChartBarIcon className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Avg SEO Score</p>
+                <p className={`text-2xl font-bold ${getScoreColor(analyticsData.performanceMetrics.averageScores.seo)}`}>
+                  {analyticsData.performanceMetrics.averageScores.seo}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-xl shadow-lg p-6"
+          >
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-green-100">
+                <DevicePhoneMobileIcon className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Mobile Score</p>
+                <p className={`text-2xl font-bold ${getScoreColor(analyticsData.performanceMetrics.averageScores.mobile)}`}>
+                  {analyticsData.performanceMetrics.averageScores.mobile}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-xl shadow-lg p-6"
+          >
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-purple-100">
+                <ComputerDesktopIcon className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Desktop Score</p>
+                <p className={`text-2xl font-bold ${getScoreColor(analyticsData.performanceMetrics.averageScores.desktop)}`}>
+                  {analyticsData.performanceMetrics.averageScores.desktop}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-xl shadow-lg p-6"
+          >
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-orange-100">
+                <BoltIcon className="h-6 w-6 text-orange-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Analyses</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {analyticsData.performanceMetrics.totalAnalyses}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* SEO Scores Trend */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-xl shadow-lg p-6"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">SEO Score Trends</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={analyticsData?.charts?.seoScores || []}>
+              <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="date" 
                 tickFormatter={formatDate}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: '#666', fontSize: 12 }}
+                fontSize={12}
               />
-              <YAxis 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: '#666', fontSize: 12 }}
-              />
+              <YAxis domain={[0, 100]} />
               <Tooltip 
-                labelFormatter={formatDate}
-                formatter={(value) => [`${value} views`, 'Page Views']}
-                contentStyle={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid rgba(74, 144, 226, 0.2)',
-                  borderRadius: '8px',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-                }}
+                labelFormatter={(value) => formatDate(value)}
+                formatter={(value) => [value, 'SEO Score']}
               />
               <Area 
                 type="monotone" 
-                dataKey="count" 
-                stroke="#4a90e2" 
-                strokeWidth={3}
-                fill="url(#pageViewsGradient)"
+                dataKey="value" 
+                stroke="#3B82F6" 
+                fill="#93C5FD" 
+                strokeWidth={2}
               />
             </AreaChart>
           </ResponsiveContainer>
-        </div>
-      </motion.div>
-
-      {/* Secondary Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Visitors Chart */}
-        <motion.div 
-          className="chart-container"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <UsersIcon className="w-5 h-5 mr-2" />
-            Unique Visitors
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={analyticsData?.data?.visitors}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(16, 185, 129, 0.1)" />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={formatDate}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#666', fontSize: 11 }}
-                />
-                <YAxis 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#666', fontSize: 11 }}
-                />
-                <Tooltip 
-                  labelFormatter={formatDate}
-                  formatter={(value) => [`${value} visitors`, 'Visitors']}
-                  contentStyle={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                    borderRadius: '8px',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="count" 
-                  stroke="#10b981" 
-                  strokeWidth={3}
-                  dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
         </motion.div>
 
-        {/* Search Performance Chart */}
-        <motion.div 
-          className="chart-container"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+        {/* PageSpeed Comparison */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white rounded-xl shadow-lg p-6"
         >
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <MagnifyingGlassIcon className="w-5 h-5 mr-2" />
-            Search Performance
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={analyticsData?.data?.searchImpressions}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(245, 158, 11, 0.1)" />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={formatDate}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#666', fontSize: 11 }}
-                />
-                <YAxis 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#666', fontSize: 11 }}
-                />
-                <Tooltip 
-                  labelFormatter={formatDate}
-                  formatter={(value) => [`${value} impressions`, 'Impressions']}
-                  contentStyle={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: '1px solid rgba(245, 158, 11, 0.2)',
-                    borderRadius: '8px',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="count" 
-                  stroke="#f59e0b" 
-                  strokeWidth={3}
-                  dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: '#f59e0b', strokeWidth: 2 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">PageSpeed Scores</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={analyticsData?.charts?.pageSpeedMobile?.map((item, index) => ({
+              date: item.date,
+              mobile: item.value,
+              desktop: analyticsData?.charts?.pageSpeedDesktop?.[index]?.value || 0
+            })) || []}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="date" 
+                tickFormatter={formatDate}
+                fontSize={12}
+              />
+              <YAxis domain={[0, 100]} />
+              <Tooltip 
+                labelFormatter={(value) => formatDate(value)}
+                formatter={(value, name) => [value, name === 'mobile' ? 'Mobile Score' : 'Desktop Score']}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="mobile" 
+                stroke="#10B981" 
+                strokeWidth={2}
+                name="mobile"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="desktop" 
+                stroke="#8B5CF6" 
+                strokeWidth={2}
+                name="desktop"
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </motion.div>
       </div>
 
-      {/* Analytics Summary Cards */}
-      <div className="dashboard-grid">
-        <motion.div 
-          className="stat-card"
+      {/* Core Web Vitals */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white rounded-xl shadow-lg p-6"
+      >
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Core Web Vitals Trends</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* LCP */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-600 mb-2">Largest Contentful Paint (LCP)</h4>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={analyticsData?.charts?.coreWebVitals?.lcp || []}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={formatDate}
+                  fontSize={10}
+                />
+                <YAxis fontSize={10} />
+                <Tooltip 
+                  labelFormatter={(value) => formatDate(value)}
+                  formatter={(value) => [`${value}s`, 'LCP']}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="#F59E0B" 
+                  fill="#FCD34D" 
+                  strokeWidth={2}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* FID */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-600 mb-2">First Input Delay (FID)</h4>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={analyticsData?.charts?.coreWebVitals?.fid || []}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={formatDate}
+                  fontSize={10}
+                />
+                <YAxis fontSize={10} />
+                <Tooltip 
+                  labelFormatter={(value) => formatDate(value)}
+                  formatter={(value) => [`${value}ms`, 'FID']}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="#EF4444" 
+                  fill="#FCA5A5" 
+                  strokeWidth={2}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* CLS */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-600 mb-2">Cumulative Layout Shift (CLS)</h4>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={analyticsData?.charts?.coreWebVitals?.cls || []}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={formatDate}
+                  fontSize={10}
+                />
+                <YAxis fontSize={10} />
+                <Tooltip 
+                  labelFormatter={(value) => formatDate(value)}
+                  formatter={(value) => [value.toFixed(3), 'CLS']}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="#06B6D4" 
+                  fill="#67E8F9" 
+                  strokeWidth={2}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Recent Analyses & Top Domains */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Analyses */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          whileHover={{ 
-          scale: 1.1,
-          transition: { duration: 0.1 }
-        }}
+          transition={{ delay: 0.3 }}
+          className="bg-white rounded-xl shadow-lg p-6"
         >
-          <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)' }}>
-            <ArrowTrendingUpIcon className="w-6 h-6 text-white" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Analyses</h3>
+          <div className="space-y-3">
+            {analyticsData?.recentAnalyses?.slice(0, 5).map((analysis, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="font-medium text-gray-900">{analysis.domain}</p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(analysis.date).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex space-x-3 text-sm">
+                  <span className={`font-medium ${getScoreColor(analysis.seoScore)}`}>
+                    SEO: {analysis.seoScore}
+                  </span>
+                  <span className={`font-medium ${getScoreColor(analysis.mobileScore)}`}>
+                    M: {analysis.mobileScore}
+                  </span>
+                  <span className={`font-medium ${getScoreColor(analysis.desktopScore)}`}>
+                    D: {analysis.desktopScore}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="stat-card-value">
-            {analyticsData?.data?.pageViews?.reduce((sum, item) => sum + item.count, 0).toLocaleString()}
-          </div>
-          <div className="stat-card-label">Total Page Views</div>
         </motion.div>
 
-        <motion.div 
-          className="stat-card"
+        {/* Top Domains */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          whileHover={{ 
-          scale: 1.1,
-          transition: { duration: 0.1 }
-        }}
+          transition={{ delay: 0.4 }}
+          className="bg-white rounded-xl shadow-lg p-6"
         >
-          <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
-            <UsersIcon className="w-6 h-6 text-white" />
-          </div>
-          <div className="stat-card-value">
-            {analyticsData?.data?.visitors?.reduce((sum, item) => sum + item.count, 0).toLocaleString()}
-          </div>
-          <div className="stat-card-label">Total Visitors</div>
-        </motion.div>
-
-        <motion.div 
-          className="stat-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          whileHover={{ 
-          scale: 1.1,
-          transition: { duration: 0.1 }
-        }}
-        >
-          <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
-            <EyeIcon className="w-6 h-6 text-white" />
-          </div>
-          <div className="stat-card-value">
-            {analyticsData?.data?.searchImpressions?.reduce((sum, item) => sum + item.count, 0).toLocaleString()}
-          </div>
-          <div className="stat-card-label">Search Impressions</div>
-        </motion.div>
-
-        <motion.div 
-          className="stat-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
-          whileHover={{ 
-          scale: 1.1,
-          transition: { duration: 0.1 }
-        }}
-        >
-          <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' }}>
-            <HandRaisedIcon className="w-6 h-6 text-white" />
-          </div>
-          <div className="stat-card-value">
-            {analyticsData?.data?.searchClicks?.reduce((sum, item) => sum + item.count, 0).toLocaleString()}
-          </div>
-          <div className="stat-card-label">Search Clicks</div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Most Analyzed Domains</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={analyticsData?.performanceMetrics?.topDomains || []}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="domain" 
+                fontSize={12}
+                angle={-45}
+                textAnchor="end"
+                height={80}
+              />
+              <YAxis />
+              <Tooltip 
+                formatter={(value) => [value, 'Analyses']}
+              />
+              <Bar 
+                dataKey="count" 
+                fill="#3B82F6"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
         </motion.div>
       </div>
     </div>

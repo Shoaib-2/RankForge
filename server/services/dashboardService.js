@@ -1,6 +1,7 @@
 const Keyword = require('../models/Keyword');
 const SeoAnalysis = require('../models/SeoAnalysis');
 const DashboardStats = require('../models/DashboardStats');
+const googlePageSpeedService = require('./googlePageSpeed');
 
 class DashboardService {
   async calculateStats(userId) {
@@ -77,6 +78,206 @@ class DashboardService {
       return stats;
     } catch (error) {
       console.error('Error calculating dashboard stats:', error);
+      throw error;
+    }
+  }
+
+  async getAnalyticsTrends(userId, days = 30) {
+    try {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      // Get SEO analyses over time
+      const analyses = await SeoAnalysis.find({
+        userId,
+        createdAt: { $gte: startDate, $lte: endDate }
+      }).sort({ createdAt: 1 });
+
+      // Group by date and calculate averages
+      const trendsMap = new Map();
+      
+      analyses.forEach(analysis => {
+        const dateKey = analysis.createdAt.toISOString().split('T')[0];
+        if (!trendsMap.has(dateKey)) {
+          trendsMap.set(dateKey, {
+            date: dateKey,
+            seoScores: [],
+            mobileScores: [],
+            desktopScores: [],
+            coreWebVitals: {
+              lcp: [],
+              fid: [],
+              cls: []
+            },
+            analysisCount: 0
+          });
+        }
+        
+        const dayData = trendsMap.get(dateKey);
+        dayData.seoScores.push(analysis.score || 0);
+        dayData.analysisCount++;
+
+        // Extract PageSpeed data if available
+        if (analysis.pageSpeed) {
+          if (analysis.pageSpeed.mobile?.score) {
+            dayData.mobileScores.push(analysis.pageSpeed.mobile.score);
+          }
+          if (analysis.pageSpeed.desktop?.score) {
+            dayData.desktopScores.push(analysis.pageSpeed.desktop.score);
+          }
+          
+          // Core Web Vitals from mobile data
+          if (analysis.pageSpeed.mobile?.coreWebVitals) {
+            const cwv = analysis.pageSpeed.mobile.coreWebVitals;
+            if (cwv.largestContentfulPaint?.value) {
+              dayData.coreWebVitals.lcp.push(cwv.largestContentfulPaint.value);
+            }
+            if (cwv.firstInputDelay?.value) {
+              dayData.coreWebVitals.fid.push(cwv.firstInputDelay.value);
+            }
+            if (cwv.cumulativeLayoutShift?.value) {
+              dayData.coreWebVitals.cls.push(cwv.cumulativeLayoutShift.value);
+            }
+          }
+        }
+      });
+
+      // Convert to array and calculate averages
+      const trends = Array.from(trendsMap.values()).map(dayData => ({
+        date: dayData.date,
+        seoScore: dayData.seoScores.length > 0 
+          ? Math.round(dayData.seoScores.reduce((a, b) => a + b, 0) / dayData.seoScores.length)
+          : 0,
+        mobileScore: dayData.mobileScores.length > 0
+          ? Math.round(dayData.mobileScores.reduce((a, b) => a + b, 0) / dayData.mobileScores.length)
+          : 0,
+        desktopScore: dayData.desktopScores.length > 0
+          ? Math.round(dayData.desktopScores.reduce((a, b) => a + b, 0) / dayData.desktopScores.length)
+          : 0,
+        lcp: dayData.coreWebVitals.lcp.length > 0
+          ? parseFloat((dayData.coreWebVitals.lcp.reduce((a, b) => a + b, 0) / dayData.coreWebVitals.lcp.length).toFixed(2))
+          : 0,
+        fid: dayData.coreWebVitals.fid.length > 0
+          ? parseFloat((dayData.coreWebVitals.fid.reduce((a, b) => a + b, 0) / dayData.coreWebVitals.fid.length).toFixed(2))
+          : 0,
+        cls: dayData.coreWebVitals.cls.length > 0
+          ? parseFloat((dayData.coreWebVitals.cls.reduce((a, b) => a + b, 0) / dayData.coreWebVitals.cls.length).toFixed(2))
+          : 0,
+        analysisCount: dayData.analysisCount
+      }));
+
+      return trends;
+    } catch (error) {
+      console.error('Error getting analytics trends:', error);
+      throw error;
+    }
+  }
+
+  async getRecentAnalyses(userId, limit = 10) {
+    try {
+      const analyses = await SeoAnalysis.find({ userId })
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .select('url score pageSpeed createdAt domain');
+
+      return analyses.map(analysis => ({
+        id: analysis._id,
+        url: analysis.url,
+        domain: analysis.domain,
+        seoScore: analysis.score || 0,
+        mobileScore: analysis.pageSpeed?.mobile?.score || 0,
+        desktopScore: analysis.pageSpeed?.desktop?.score || 0,
+        date: analysis.createdAt,
+        coreWebVitals: analysis.pageSpeed?.mobile?.coreWebVitals ? {
+          lcp: analysis.pageSpeed.mobile.coreWebVitals.largestContentfulPaint?.value || 0,
+          fid: analysis.pageSpeed.mobile.coreWebVitals.firstInputDelay?.value || 0,
+          cls: analysis.pageSpeed.mobile.coreWebVitals.cumulativeLayoutShift?.value || 0
+        } : null
+      }));
+    } catch (error) {
+      console.error('Error getting recent analyses:', error);
+      throw error;
+    }
+  }
+
+  async getPerformanceMetrics(userId) {
+    try {
+      // Get latest analyses for performance overview
+      const recentAnalyses = await SeoAnalysis.find({ userId })
+        .sort({ createdAt: -1 })
+        .limit(50);
+
+      if (recentAnalyses.length === 0) {
+        return {
+          averageScores: { seo: 0, mobile: 0, desktop: 0 },
+          coreWebVitals: { lcp: 0, fid: 0, cls: 0 },
+          totalAnalyses: 0,
+          topDomains: []
+        };
+      }
+
+      // Calculate averages
+      let seoSum = 0, mobileSum = 0, desktopSum = 0;
+      let lcpSum = 0, fidSum = 0, clsSum = 0;
+      let mobileCount = 0, desktopCount = 0, cwvCount = 0;
+      
+      const domainCounts = new Map();
+
+      recentAnalyses.forEach(analysis => {
+        if (analysis.score) seoSum += analysis.score;
+        
+        if (analysis.pageSpeed?.mobile?.score) {
+          mobileSum += analysis.pageSpeed.mobile.score;
+          mobileCount++;
+        }
+        
+        if (analysis.pageSpeed?.desktop?.score) {
+          desktopSum += analysis.pageSpeed.desktop.score;
+          desktopCount++;
+        }
+
+        // Core Web Vitals
+        if (analysis.pageSpeed?.mobile?.coreWebVitals) {
+          const cwv = analysis.pageSpeed.mobile.coreWebVitals;
+          if (cwv.largestContentfulPaint?.value) {
+            lcpSum += cwv.largestContentfulPaint.value;
+            cwvCount++;
+          }
+          if (cwv.firstInputDelay?.value) {
+            fidSum += cwv.firstInputDelay.value;
+          }
+          if (cwv.cumulativeLayoutShift?.value) {
+            clsSum += cwv.cumulativeLayoutShift.value;
+          }
+        }
+
+        // Domain tracking
+        const domain = analysis.domain || new URL(analysis.url).hostname;
+        domainCounts.set(domain, (domainCounts.get(domain) || 0) + 1);
+      });
+
+      const topDomains = Array.from(domainCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([domain, count]) => ({ domain, count }));
+
+      return {
+        averageScores: {
+          seo: Math.round(seoSum / recentAnalyses.length),
+          mobile: mobileCount > 0 ? Math.round(mobileSum / mobileCount) : 0,
+          desktop: desktopCount > 0 ? Math.round(desktopSum / desktopCount) : 0
+        },
+        coreWebVitals: {
+          lcp: cwvCount > 0 ? parseFloat((lcpSum / cwvCount).toFixed(2)) : 0,
+          fid: cwvCount > 0 ? parseFloat((fidSum / cwvCount).toFixed(2)) : 0,
+          cls: cwvCount > 0 ? parseFloat((clsSum / cwvCount).toFixed(3)) : 0
+        },
+        totalAnalyses: recentAnalyses.length,
+        topDomains
+      };
+    } catch (error) {
+      console.error('Error getting performance metrics:', error);
       throw error;
     }
   }

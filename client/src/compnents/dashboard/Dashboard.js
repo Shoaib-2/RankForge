@@ -5,6 +5,7 @@ import AnalyticsDashboard from './analytics/AnalyticsDashboard';
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import authService from '../../services/authService';
+import analyticsService from '../../services/analyticsService';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { 
@@ -24,6 +25,7 @@ const Dashboard = () => {
     seoScore: { value: 0, change: 0 },
     issues: { count: 0, highPriority: 0 }
   });
+  const [performanceMetrics, setPerformanceMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -37,14 +39,23 @@ const Dashboard = () => {
       setLoading(true);
       setErrorMessage(null);
       const token = authService.getToken();
-      const response = await axios.get('http://localhost:5000/api/dashboard/stats', {
-        headers: { Authorization: `Bearer ${token}` },
-        params: {
-          startDate: dateRange.startDate.toISOString(),
-          endDate: dateRange.endDate.toISOString()
-        }
-      });
-      setStats(response.data);
+      
+      // Fetch both dashboard stats and performance metrics
+      const [statsResponse, metricsResponse] = await Promise.all([
+        axios.get('http://localhost:5000/api/dashboard/stats', {
+          headers: { Authorization: `Bearer ${token}` },
+          params: {
+            startDate: dateRange.startDate.toISOString(),
+            endDate: dateRange.endDate.toISOString()
+          }
+        }),
+        analyticsService.getPerformanceMetrics().catch(() => ({ data: null }))
+      ]);
+      
+      setStats(statsResponse.data);
+      if (metricsResponse.success) {
+        setPerformanceMetrics(metricsResponse.data);
+      }
       setLastUpdated(new Date());
     } catch (err) {
       console.error('Error fetching dashboard stats:', err);
@@ -60,7 +71,7 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [dateRange]);
+  }, [dateRange.startDate, dateRange.endDate]);
 
   useEffect(() => {
     // Set demo data immediately for better UX
@@ -202,6 +213,54 @@ const Dashboard = () => {
           <div className="flex items-center">
             <ExclamationTriangleIcon className="w-5 h-5 mr-3 text-amber-500" />
             <p className="font-medium">{errorMessage}</p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Performance Metrics Section */}
+      {performanceMetrics && (
+        <motion.div 
+          className="bg-white rounded-xl shadow-lg p-6 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">🚀 Real Performance Insights</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">Average SEO Score</h4>
+              <p className="text-2xl font-bold text-blue-600">{performanceMetrics.averageScores.seo}</p>
+              <p className="text-xs text-gray-500">From {performanceMetrics.totalAnalyses} analyses</p>
+            </div>
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">Mobile Performance</h4>
+              <p className="text-2xl font-bold text-green-600">{performanceMetrics.averageScores.mobile}</p>
+              <p className="text-xs text-gray-500">Google PageSpeed Mobile</p>
+            </div>
+            <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">Desktop Performance</h4>
+              <p className="text-2xl font-bold text-purple-600">{performanceMetrics.averageScores.desktop}</p>
+              <p className="text-xs text-gray-500">Google PageSpeed Desktop</p>
+            </div>
+          </div>
+          
+          {/* Core Web Vitals */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <h4 className="text-sm font-medium text-gray-600 mb-3">Core Web Vitals</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                <span className="text-sm text-gray-600">LCP</span>
+                <span className="font-semibold text-gray-900">{performanceMetrics.coreWebVitals.lcp}s</span>
+              </div>
+              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                <span className="text-sm text-gray-600">FID</span>
+                <span className="font-semibold text-gray-900">{performanceMetrics.coreWebVitals.fid}ms</span>
+              </div>
+              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                <span className="text-sm text-gray-600">CLS</span>
+                <span className="font-semibold text-gray-900">{performanceMetrics.coreWebVitals.cls}</span>
+              </div>
+            </div>
           </div>
         </motion.div>
       )}
