@@ -217,6 +217,34 @@ const Dashboard = () => {
         </motion.div>
       )}
 
+      {/* Rate Limit Information */}
+      <motion.div 
+        className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-lg p-4 mb-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <BoltIcon className="h-5 w-5 text-amber-500" />
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-amber-800">
+              🔒 Fair Usage Policy
+            </h3>
+            <p className="mt-1 text-sm text-amber-700">
+              This tool implements rate limiting (3 SEO analyses per session) to ensure fair API usage and prevent abuse. 
+              This demonstrates <strong>production-ready security practices</strong> and responsible resource management.
+            </p>
+            <div className="mt-2 flex items-center space-x-4 text-xs text-amber-600">
+              <span>✅ Industry-standard rate limiting</span>
+              <span>✅ Real Google API integration</span>
+              <span>✅ Professional error handling</span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Performance Metrics Section */}
       {performanceMetrics && (
         <motion.div 

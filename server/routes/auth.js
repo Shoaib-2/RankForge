@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
-const { authLimiter, emailRateLimiter } = require('../middleware/rateLimiter');
+const { authLimiter, emailRateLimiter, loginLimiter, loginEmailLimiter } = require('../middleware/rateLimiter');
 const { validationRules, handleValidationErrors } = require('../middleware/validation');
 const { authMiddleware } = require('../middleware/auth');
 
@@ -18,18 +18,19 @@ router.get('/test', (req, res) => {
   res.json({ message: 'Auth routes are working!' });
 });
 
-// Apply rate limiting to all auth routes
-router.use(authLimiter);
-
+// Apply minimal rate limiting only to registration to prevent spam
 router.post('/register', 
+  authLimiter,
   emailRateLimiter,
   validationRules.register,
   handleValidationErrors,
   authController.register
 );
 
+// Login route - very generous rate limiting (100 attempts per 5 min per IP, 50 per hour per email)
 router.post('/login', 
-  emailRateLimiter,
+  loginLimiter,
+  loginEmailLimiter,
   validationRules.login,
   handleValidationErrors,
   authController.login

@@ -24,16 +24,34 @@ const generalLimiter = rateLimit({
   }
 });
 
-// Auth rate limiter for login/register endpoints
+// Auth rate limiter for registration endpoints only
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Limit each IP to 20 auth requests per windowMs
+  max: 10, // Limit each IP to 10 registration requests per windowMs
   message: {
     success: false,
-    message: 'Too many authentication attempts, please try again later.'
+    message: 'Too many registration attempts, please try again later.'
   },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => {
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = forwarded ? forwarded.split(',')[0] : req.connection.remoteAddress;
+    return ip;
+  }
+});
+
+// Very generous login rate limiter - only prevents extreme abuse
+const loginLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 100, // Allow 100 login attempts per 5 minutes per IP
+  message: {
+    success: false,
+    message: 'Too many login attempts. Please wait a few minutes.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Don't count successful logins
   keyGenerator: (req) => {
     const forwarded = req.headers['x-forwarded-for'];
     const ip = forwarded ? forwarded.split(',')[0] : req.connection.remoteAddress;
@@ -94,7 +112,7 @@ const seoAnalysisLimiter = (req, res, next) => {
   next();
 };
 
-// Email-based rate limiter for auth endpoints
+// Email-based rate limiter for registration only - prevent email spam
 const emailRateLimiter = (req, res, next) => {
   const email = req.body.email;
   
@@ -105,11 +123,11 @@ const emailRateLimiter = (req, res, next) => {
   const emailKey = `email_${email.toLowerCase()}`;
   const currentCount = emailCache.get(emailKey) || 0;
   
-  // Allow 5 requests per hour per email
-  if (currentCount >= 5) {
+  // Allow 3 registration requests per hour per email (prevent signup spam)
+  if (currentCount >= 3) {
     return res.status(429).json({
       success: false,
-      message: 'Too many requests for this email. Please try again later.'
+      message: 'Too many registration attempts for this email. Please try again later.'
     });
   }
   
@@ -117,10 +135,35 @@ const emailRateLimiter = (req, res, next) => {
   next();
 };
 
+// Very generous login email limiter - only for extreme abuse
+const loginEmailLimiter = (req, res, next) => {
+  const email = req.body.email;
+  
+  if (!email) {
+    return next();
+  }
+
+  const emailKey = `login_${email.toLowerCase()}`;
+  const currentCount = emailCache.get(emailKey) || 0;
+  
+  // Allow 50 login attempts per hour per email (very generous)
+  if (currentCount >= 50) {
+    return res.status(429).json({
+      success: false,
+      message: 'Unusual activity detected. Please wait an hour before trying again.'
+    });
+  }
+  
+  emailCache.set(emailKey, currentCount + 1, 3600); // 1 hour cache
+  next();
+};
+
 module.exports = {
   generalLimiter,
   authLimiter,
+  loginLimiter,
   speedLimiter,
   seoAnalysisLimiter,
-  emailRateLimiter
+  emailRateLimiter,
+  loginEmailLimiter
 };

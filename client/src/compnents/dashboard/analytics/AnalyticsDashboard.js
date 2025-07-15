@@ -159,6 +159,10 @@ const AnalyticsDashboard = () => {
       {error && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-blue-700 text-sm">{error}</p>
+          <div className="mt-2 text-xs text-blue-600">
+            💡 <strong>Tip:</strong> Rate limits (3 analyses per session) help ensure fair API usage. 
+            This demonstrates proper resource management and security best practices.
+          </div>
         </div>
       )}
 
