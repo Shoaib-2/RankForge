@@ -22,3 +22,596 @@
       width: auto;
     }
   }
+
+/* Dashboard-specific components */
+.dashboard-container {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-container {
+    padding: 2rem;
+  }
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Enhanced Stat Card Styling for Better Visibility */
+.stat-card-value {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  color: #1a202c !important;
+  line-height: 1.2 !important;
+  margin: 0.75rem 0 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  display: block !important;
+  min-height: 3rem !important;
+}
+
+.stat-card-label {
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: #4a5568 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-top: 0.5rem !important;
+}
+
+.stat-card-icon {
+  width: 3rem !important;
+  height: 3rem !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.5rem !important;
+  margin-bottom: 1rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Ensure stat cards have proper layout */
+.stat-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 16px !important;
+  padding: 1.5rem !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1) !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  min-height: 140px !important;
+}
+
+.chart-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.chart-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.export-section {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.export-buttons {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .export-buttons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .export-buttons {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.export-button {
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.875rem 1.5rem;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.export-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
+}
+
+.export-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.email-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .email-form {
+    flex-direction: row;
+  }
+}
+
+.keyword-tracker {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Improved keyword item layout */
+.keyword-item {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 0.75rem !important;
+  padding: 1.5rem !important;
+  display: block !important;
+  transition: all 0.3s ease !important;
+  margin-bottom: 1rem !important;
+}
+
+.keyword-item:hover {
+  background: rgba(255, 255, 255, 1) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Keyword list grid */
+.keyword-list {
+  display: grid !important;
+  gap: 1.5rem !important;
+  margin-top: 1.5rem !important;
+}
+
+.seo-analysis-section {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.analysis-results {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.analysis-item {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.analysis-item:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+}
+
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1rem;
+  color: white;
+  margin-right: 1rem;
+}
+
+.score-excellent {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.score-good {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.score-poor {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.page-speed-container {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .page-speed-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.responsive-table {
+  overflow-x: auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.responsive-table table {
+  width: 100%;
+  min-width: 600px;
+}
+
+.responsive-table th,
+.responsive-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.responsive-table th {
+  background: rgba(74, 144, 226, 0.1);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Loading states */
+.loading-skeleton {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.8) 25%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0.8) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Message alerts */
+.alert {
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  font-weight: 500;
+}
+
+.alert-success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #059669;
+}
+
+.alert-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+}
+
+.alert-info {
+  background: rgba(74, 144, 226, 0.1);
+  border: 1px solid rgba(74, 144, 226, 0.2);
+  color: #2563eb;
+}
+
+/* Responsive utilities */
+.hidden-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hidden-mobile {
+    display: block;
+  }
+}
+
+.hidden-desktop {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .hidden-desktop {
+    display: none;
+  }
+}
+
+.text-responsive {
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .text-responsive {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive {
+    font-size: 1.125rem;
+  }
+}
+
+/* Dashboard header */
+.dashboard-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.dashboard-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  background: var(--gradient-primary);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (min-width: 768px) {
+  .dashboard-title {
+    font-size: 2.25rem;
+  }
+}
+
+.dashboard-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .dashboard-controls {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* Input field styling */
+.futuristic-input {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(74, 144, 226, 0.3) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.875rem 1rem !important;
+  font-size: 0.875rem !important;
+  color: #374151 !important;
+  transition: all 0.3s ease !important;
+  width: 100%;
+  outline: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.futuristic-input:focus {
+  border-color: #4a90e2 !important;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1), 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 1) !important;
+}
+
+.futuristic-input::placeholder {
+  color: #9ca3af !important;
+}
+
+.futuristic-input::-webkit-input-placeholder {
+  color: #9ca3af !important;
+}
+
+.futuristic-input::-moz-placeholder {
+  color: #9ca3af !important;
+}
+
+.futuristic-input:-ms-input-placeholder {
+  color: #9ca3af !important;
+}
+
+/* Button styling */
+.futuristic-button {
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%) !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  padding: 0.875rem 1.5rem !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  position: relative;
+  overflow: hidden;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  outline: none !important;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2) !important;
+}
+
+.futuristic-button:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4) !important;
+  background: linear-gradient(135deg, #357abd 0%, #2968a3 100%) !important;
+}
+
+.futuristic-button:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  background: #9ca3af !important;
+}
+
+.futuristic-button:active:not(:disabled) {
+  transform: translateY(0) !important;
+}
+
+/* Date picker styling */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container input {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(74, 144, 226, 0.3) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.875rem 1rem !important;
+  font-size: 0.875rem !important;
+  color: #374151 !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  outline: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.react-datepicker__input-container input:focus {
+  border-color: #4a90e2 !important;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1), 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 1) !important;
+}
+
+.react-datepicker__input-container input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* DatePicker popup styling */
+.react-datepicker {
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(74, 144, 226, 0.2) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+.react-datepicker__header {
+  background: rgba(74, 144, 226, 0.1) !important;
+  border-bottom: 1px solid rgba(74, 144, 226, 0.2) !important;
+  border-radius: 1rem 1rem 0 0 !important;
+}
+
+.react-datepicker__current-month {
+  color: #374151 !important;
+  font-weight: 600 !important;
+}
+
+.react-datepicker__day-name {
+  color: #6b7280 !important;
+  font-weight: 500 !important;
+}
+
+.react-datepicker__day {
+  color: #374151 !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-datepicker__day:hover {
+  background: rgba(74, 144, 226, 0.1) !important;
+  color: #4a90e2 !important;
+}
+
+.react-datepicker__day--selected {
+  background: #4a90e2 !important;
+  color: white !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background: rgba(74, 144, 226, 0.2) !important;
+  color: #4a90e2 !important;
+}

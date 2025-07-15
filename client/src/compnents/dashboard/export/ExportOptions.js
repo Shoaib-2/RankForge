@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 import authService from '../../../services/authService';
+import { 
+  DocumentArrowDownIcon, 
+  DocumentChartBarIcon, 
+  ClipboardDocumentIcon, 
+  EnvelopeIcon, 
+  CheckCircleIcon, 
+  XCircleIcon 
+} from '@heroicons/react/24/outline';
 
 const ExportOptions = ({ analysisData }) => {
   const [email, setEmail] = useState('');
@@ -117,62 +126,97 @@ const handleEmailReport = async (e) => {
 };
 
 return (
-  <div className="bg-white shadow-sm rounded-lg p-6">
-    <h2 className="text-xl font-semibold text-blue-500 mb-6">Export Options</h2>
+  <motion.div 
+    className="export-section"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6 }}
+  >
+    <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+      <DocumentArrowDownIcon className="w-6 h-6 mr-2" />
+      Export Options
+    </h2>
     
     <div className="space-y-6">
       {/* Export Buttons */}
-      <div className="flex flex-wrap gap-4">
-        <button
+      <div className="export-buttons">
+        <motion.button
           onClick={handleExportPDF}
-          disabled={loading === 'pdf'}
-          className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md shadow-sm transition duration-500"
+          disabled={loading}
+          className="export-button"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
         >
+          <span className="text-lg">📊</span>
           {loading === 'pdf' ? 'Exporting...' : 'Export PDF'}
-        </button>
+        </motion.button>
         
-        <button
+        <motion.button
           onClick={handleExportCSV}
-          disabled={loading === 'csv'}
-          className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md shadow-sm transition duration-500"
+          disabled={loading}
+          className="export-button"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
         >
+          <span className="text-lg">📋</span>
           {loading === 'csv' ? 'Exporting...' : 'Export CSV'}
-        </button>
+        </motion.button>
       </div>
 
       {/* Email Form */}
-        <div>
-          <label className="block text-sm font-medium text-blue-500 mb-2">
-            Email Report
-          </label>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter email address"
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
-            />
-            <button
-          onClick={handleEmailReport}
-          disabled={loading === 'email'}
-          className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md shadow-sm transition duration-500"
-            >
-          {loading === 'email' ? 'Sending...' : 'Send Report'}
-            </button>
-          </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
+          📧 Email Report
+        </label>
+        <div className="email-form">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter email address"
+            className="futuristic-input flex-1"
+          />
+          <motion.button
+            onClick={handleEmailReport}
+            disabled={loading === 'email' || !email}
+            className="export-button"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span className="text-lg">✉️</span>
+            {loading === 'email' ? 'Sending...' : 'Send Report'}
+          </motion.button>
         </div>
+      </motion.div>
 
-        {/* Message Display */}
+      {/* Message Display */}
       {message && (
-        <div className={`mt-4 p-4 rounded-md ${
-          messageType === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
-        }`}>
-          {message}
-        </div>
+        <motion.div 
+          className={`alert ${messageType === 'success' ? 'alert-success' : 'alert-error'}`}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="flex items-center">
+            <span className="text-xl mr-3">
+              {messageType === 'success' ? '✅' : '❌'}
+            </span>
+            <p className="font-medium">{message}</p>
+          </div>
+        </motion.div>
       )}
     </div>
-  </div>
+  </motion.div>
 );
 };
 
