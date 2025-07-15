@@ -4,38 +4,56 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const { generalLimiter, speedLimiter } = require('./middleware/rateLimiter');
+const { sanitizeInput } = require('./middleware/validation');
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const { logger, requestLogger } = require('./utils/logger');
 require('dotenv').config();
 
 const app = express();
 
-// CORS configuration to allow frontend (Vercel) to communicate with backend (Render)
+// CORS configuration to allow frontend to communicate with backend
 const corsOptions = {
   origin: [
-    process.env.FRONTEND_URL, // Production frontend URL from environment variable
-    'https://seo-tool-eta.vercel.app', // Fallback without trailing slash
-    'http://localhost:3000', // Local development
-    'http://localhost:3001'  // Alternative local port
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    process.env.FRONTEND_URL,
+    'https://seo-tool-eta.vercel.app'
   ],
-  credentials: true, // Allow cookies and authorization headers
-  optionsSuccessStatus: 200, // Support legacy browsers
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin'
+  ],
+  exposedHeaders: ['X-Total-Count'],
+  preflightContinue: false
 };
 
-// Middleware
-app.use(cors(corsOptions)); // Apply CORS configuration
-app.use(helmet()); // Security headers
-app.use(morgan('dev')); // Request logging
-app.use(express.json()); // Parse JSON bodies
+// Middleware - CORS must be first
+app.use(cors(corsOptions)); // Apply CORS configuration first
 
-// Add preflight handling for complex CORS requests
+// Handle preflight requests for all routes
 app.options('*', cors(corsOptions));
 
-// Debug middleware to log CORS requests
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin') || 'No Origin'}`);
-  next();
-});
+// Debug middleware to log requests (disabled for production)
+// app.use(requestLogger(logger));
+
+// Security and rate limiting middleware
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+})); // Security headers with CORS support
+// app.use(morgan('dev')); // Request logging disabled for cleaner output
+app.use(generalLimiter); // General rate limiting
+app.use(speedLimiter); // Progressive delay
+app.use(express.json({ limit: '10mb' })); // Parse JSON bodies with size limit
+app.use(sanitizeInput); // Input sanitization
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -58,8 +76,20 @@ app.use('/api/dashboard', dashboardRoutes);
 
 // Basic route
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
+  res.status(200).json({ 
+    status: 'OK', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: process.env.npm_package_version || '1.0.0'
+  });
 });
+
+// 404 handler for unmatched routes
+app.use(notFoundHandler);
+
+// Global error handler (must be last)
+app.use(errorHandler);
 
 // MongoDB Connection
 const uri = process.env.MONGODB_URI;
@@ -79,14 +109,14 @@ async function connectToMongoDB() {
   try {
     // Connect using Mongoose
     await mongoose.connect(uri);
-    console.log('Connected to MongoDB via Mongoose');
+    console.log('✅ Connected to MongoDB');
 
     // Also connect using MongoClient for ping test
     await client.connect();
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log('✅ Database connection verified');
   } catch (err) {
-    console.error('MongoDB connection error:', err);
+    logger.error('MongoDB connection error:', { error: err.message, stack: err.stack });
     process.exit(1);
   }
 }
@@ -96,19 +126,37 @@ const PORT = process.env.PORT || 5000;
 
 connectToMongoDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`🚀 SEO Tool Server running on port ${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
   });
-}).catch(console.dir);
+}).catch((err) => {
+  logger.error('Failed to start server:', { error: err.message, stack: err.stack });
+  process.exit(1);
+});
 
 // Handle process termination
 process.on('SIGINT', async () => {
   try {
+    logger.info('Gracefully shutting down server...');
     await client.close();
     await mongoose.connection.close();
-    console.log('MongoDB connections closed.');
+    logger.info('MongoDB connections closed.');
     process.exit(0);
   } catch (err) {
-    console.error('Error during cleanup:', err);
+    logger.error('Error during cleanup:', { error: err.message, stack: err.stack });
     process.exit(1);
   }
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught Exception:', { error: err.message, stack: err.stack });
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection:', { reason, promise });
+  process.exit(1);
 });

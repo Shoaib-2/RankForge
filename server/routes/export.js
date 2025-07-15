@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const exportService = require('../services/exportService');
-const authMiddleware = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
 const fs = require('fs'); 
 
 router.post('/pdf', authMiddleware, async (req, res) => {

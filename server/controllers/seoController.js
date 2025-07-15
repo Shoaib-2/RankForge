@@ -93,14 +93,15 @@ const seoController = {
       const seoAnalysis = new SeoAnalysis(analysisData);
       await seoAnalysis.save();
 
-      // Send response
+      // Send response with usage information
       res.json({
         success: true,
         data: {
           score,
           analysis: analysisData.analysis,
           recommendations: generateRecommendations(analysisResults)
-        }
+        },
+        usage: req.usageInfo // Added from rate limiter middleware
       });
 
     } catch (error) {

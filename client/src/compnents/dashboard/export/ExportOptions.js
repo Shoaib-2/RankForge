@@ -24,7 +24,7 @@ const ExportOptions = ({ analysisData }) => {
       setLoading(true);
       const token = authService.getToken();
       const response = await axios.post(
-        'https://seotool-l1b5.onrender.com/api/export/pdf',
+        'http://localhost:5000/api/export/pdf',
         { analysisData },
         {
           headers: {
@@ -64,7 +64,7 @@ const handleExportCSV = async () => {
     
     const response = await axios({
       method: 'post',
-      url: 'https://seotool-l1b5.onrender.com/api/export/csv',
+      url: 'http://localhost:5000/api/export/csv',
       data: { analysisData },
       headers: {
         Authorization: `Bearer ${token}`,
@@ -102,7 +102,7 @@ const handleEmailReport = async (e) => {
     
     await axios({
       method: 'post',
-      url: 'https://seotool-l1b5.onrender.com/api/export/email-report',
+      url: 'http://localhost:5000/api/export/email-report',
       data: { 
         email,
         analysisData 

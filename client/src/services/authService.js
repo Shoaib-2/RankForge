@@ -4,23 +4,82 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const authService = {
+  // Set up axios interceptors for automatic token handling
+  setupAxiosInterceptors() {
+    // Request interceptor to add auth header
+    axios.interceptors.request.use(
+      (config) => {
+        const token = this.getToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    // Response interceptor to handle token refresh
+    axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+        
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          
+          try {
+            const refreshToken = this.getRefreshToken();
+            if (refreshToken) {
+              const response = await axios.post(`${API_URL}/auth/refresh-token`, {
+                refreshToken
+              });
+              
+              const { accessToken } = response.data;
+              localStorage.setItem('accessToken', accessToken);
+              
+              // Retry the original request with new token
+              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+              return axios(originalRequest);
+            }
+          } catch (refreshError) {
+            // Refresh failed, logout user
+            this.logout();
+            window.location.href = '/login';
+            return Promise.reject(refreshError);
+          }
+        }
+        
+        return Promise.reject(error);
+      }
+    );
+  },
+
   async register(userData) {
     const response = await axios.post(`${API_URL}/auth/register`, userData);
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
+    if (response.data.accessToken) {
+      localStorage.setItem('accessToken', response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+      this.setupAxiosInterceptors();
     }
     return response.data;
   },
 
-
-
   async login(credentials) {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, credentials);
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+      console.log('Making login request to:', `${API_URL}/auth/login`);
+      console.log('API_URL:', API_URL);
+      console.log('Credentials:', credentials);
+      
+      const response = await axios.post(`${API_URL}/auth/login`, credentials, {
+        timeout: 10000 // 10 second timeout
+      });
+      
+      if (response.data.accessToken) {
+        localStorage.setItem('accessToken', response.data.accessToken);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(response.data.user));
+        this.setupAxiosInterceptors();
       }
       return response.data;
     } catch (error) {
@@ -38,8 +97,13 @@ const authService = {
   },
 
   logout() {
-    localStorage.removeItem('token');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    
+    // Clear axios interceptors
+    axios.interceptors.request.clear();
+    axios.interceptors.response.clear();
   },
 
   getCurrentUser() {
@@ -53,8 +117,23 @@ const authService = {
   },
 
   getToken() {
-    return localStorage.getItem('token');
+    return localStorage.getItem('accessToken');
+  },
+
+  getRefreshToken() {
+    return localStorage.getItem('refreshToken');
+  },
+
+  // Initialize interceptors when the service is loaded
+  init() {
+    const token = this.getToken();
+    if (token) {
+      this.setupAxiosInterceptors();
+    }
   }
 };
+
+// Initialize the service
+authService.init();
 
 export default authService;

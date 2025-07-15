@@ -1,21 +1,66 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const pageSpeedAnalyzer = require('./pageSpeedAnalyzer');
+const googlePageSpeed = require('./googlePageSpeed');
+const sslAnalyzer = require('./sslAnalyzer');
+const cacheService = require('./cacheService');
 
 class SeoAnalyzer {
   async analyzeContent(url) {
     try {
-      const response = await axios.get(url);
+      console.log('Starting comprehensive SEO analysis for:', url);
+      
+      // Check cache first
+      const cachedResult = cacheService.getSeoAnalysis(url);
+      if (cachedResult) {
+        console.log('SEO analysis cache hit for:', url);
+        return cachedResult;
+      }
+
+      // Fetch page content
+      const response = await axios.get(url, {
+        timeout: 15000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; SEO-Tool/1.0; +https://seo-tool.com)'
+        }
+      });
+      
       const html = response.data;
       const $ = cheerio.load(html);
       
-      return {
-        metaAnalysis: this.analyzeMetaTags($),
-        contentAnalysis: this.analyzeContentStructure($),
-        mobileAnalysis: await this.analyzeMobileResponsiveness($, html), // New addition
-        technicalAnalysis: await this.analyzeTechnicalAspects(url)
+      // Run analyses in parallel for better performance
+      const [
+        metaAnalysis,
+        contentAnalysis,
+        mobileAnalysis,
+        pageSpeedAnalysis,
+        sslAnalysis
+      ] = await Promise.all([
+        this.analyzeMetaTags($),
+        this.analyzeContentStructure($),
+        this.analyzeMobileResponsiveness($, html),
+        googlePageSpeed.analyzePageSpeed(url),
+        sslAnalyzer.analyzeSSL(url)
+      ]);
+
+      const result = {
+        metaAnalysis,
+        contentAnalysis,
+        mobileAnalysis,
+        technicalAnalysis: {
+          pageSpeed: pageSpeedAnalysis,
+          ssl: sslAnalysis,
+          mobileResponsiveness: mobileAnalysis
+        }
       };
+
+      // Cache the result if the URL is cacheable
+      if (cacheService.shouldCache(url)) {
+        cacheService.setSeoAnalysis(url, result);
+      }
+
+      return result;
     } catch (error) {
+      console.error('Error analyzing content:', error.message);
       throw new Error(`Error analyzing content: ${error.message}`);
     }
   }
