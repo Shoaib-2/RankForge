@@ -9,64 +9,32 @@ import {
   ExclamationTriangleIcon, 
   ChartBarIcon, 
   ArrowTrendingUpIcon, 
-  TrashIcon 
+  TrashIcon,
+  ArrowPathIcon,
+  LightBulbIcon,
+  MagnifyingGlassIcon,
+  FireIcon,
+  ShieldCheckIcon,
+  ClockIcon,
+  BoltIcon
 } from '@heroicons/react/24/outline';
 
 const KeywordTracker = () => {
   const [keywords, setKeywords] = useState([]);
   const [newKeyword, setNewKeyword] = useState('');
+  const [domain, setDomain] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  
+  // Track rate limit attempts
+  const [attemptCount, setAttemptCount] = useState(() => {
+    return parseInt(localStorage.getItem('keyword_analysis_attempts') || '0');
+  });
 
   useEffect(() => {
-    // Load demo data immediately, then try to fetch real data
-    const mockKeywords = [
-      {
-        _id: '1',
-        keyword: 'SEO optimization',
-        rankings: [
-          { position: 15, date: '2024-01-01' },
-          { position: 12, date: '2024-01-02' },
-          { position: 10, date: '2024-01-03' },
-          { position: 8, date: '2024-01-04' },
-          { position: 6, date: '2024-01-05' },
-          { position: 5, date: '2024-01-06' },
-          { position: 4, date: '2024-01-07' }
-        ]
-      },
-      {
-        _id: '2',
-        keyword: 'digital marketing',
-        rankings: [
-          { position: 25, date: '2024-01-01' },
-          { position: 23, date: '2024-01-02' },
-          { position: 20, date: '2024-01-03' },
-          { position: 18, date: '2024-01-04' },
-          { position: 16, date: '2024-01-05' },
-          { position: 14, date: '2024-01-06' },
-          { position: 12, date: '2024-01-07' }
-        ]
-      },
-      {
-        _id: '3',
-        keyword: 'website analysis',
-        rankings: [
-          { position: 8, date: '2024-01-01' },
-          { position: 7, date: '2024-01-02' },
-          { position: 6, date: '2024-01-03' },
-          { position: 5, date: '2024-01-04' },
-          { position: 3, date: '2024-01-05' },
-          { position: 2, date: '2024-01-06' },
-          { position: 1, date: '2024-01-07' }
-        ]
-      }
-    ];
-    
-    // Set demo data first
-    setKeywords(mockKeywords);
-    setError('Demo data loaded - API connection may be unavailable');
-    
-    // Then try to fetch real data
     fetchKeywords();
   }, []);
 
@@ -81,49 +49,72 @@ const KeywordTracker = () => {
     } catch (error) {
       console.error('Keywords fetch error:', error);
       setError('Using demo keyword data - API unavailable');
-      // Set mock keyword data
+      
+      // Set mock keyword data with enhanced structure
       const mockKeywords = [
         {
           _id: '1',
           keyword: 'SEO optimization',
+          domain: 'example.com',
+          searchVolume: 12500,
+          difficulty: 65,
           rankings: [
-            { position: 15, date: '2024-01-01' },
-            { position: 12, date: '2024-01-02' },
-            { position: 10, date: '2024-01-03' },
-            { position: 8, date: '2024-01-04' },
-            { position: 6, date: '2024-01-05' },
-            { position: 5, date: '2024-01-06' },
-            { position: 4, date: '2024-01-07' }
-          ]
-        },
-        {
-          _id: '2',
-          keyword: 'digital marketing',
-          rankings: [
-            { position: 25, date: '2024-01-01' },
-            { position: 23, date: '2024-01-02' },
-            { position: 20, date: '2024-01-03' },
-            { position: 18, date: '2024-01-04' },
-            { position: 16, date: '2024-01-05' },
-            { position: 14, date: '2024-01-06' },
-            { position: 12, date: '2024-01-07' }
-          ]
-        },
-        {
-          _id: '3',
-          keyword: 'website analysis',
-          rankings: [
-            { position: 8, date: '2024-01-01' },
-            { position: 7, date: '2024-01-02' },
-            { position: 6, date: '2024-01-03' },
-            { position: 5, date: '2024-01-04' },
-            { position: 3, date: '2024-01-05' },
-            { position: 2, date: '2024-01-06' },
-            { position: 1, date: '2024-01-07' }
-          ]
+            { position: 15, date: '2024-01-01', searchVolume: 12500 },
+            { position: 12, date: '2024-01-02', searchVolume: 12600 },
+            { position: 10, date: '2024-01-03', searchVolume: 12400 },
+            { position: 8, date: '2024-01-04', searchVolume: 12800 },
+            { position: 6, date: '2024-01-05', searchVolume: 12300 },
+            { position: 5, date: '2024-01-06', searchVolume: 12700 },
+            { position: 4, date: '2024-01-07', searchVolume: 12900 }
+          ],
+          competitors: [
+            { domain: 'moz.com', position: 1, title: 'SEO Guide' },
+            { domain: 'semrush.com', position: 2, title: 'SEO Tools' },
+            { domain: 'ahrefs.com', position: 3, title: 'SEO Software' }
+          ],
+          analysis: {
+            trend: 'improving',
+            trendPercentage: 73,
+            opportunities: [
+              { type: 'ranking', priority: 'high', message: 'Great progress! Keep optimizing to reach top 3' }
+            ]
+          }
         }
       ];
       setKeywords(mockKeywords);
+    }
+  };
+
+  const generateKeywordSuggestions = async () => {
+    if (!newKeyword.trim()) return;
+    
+    try {
+      setLoadingSuggestions(true);
+      const token = authService.getToken();
+      const response = await axios.post(
+        'http://localhost:5000/api/keywords/suggestions',
+        { 
+          seedKeyword: newKeyword.trim(),
+          domain: domain.trim() || null
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      setSuggestions(response.data.suggestions);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error('Error generating suggestions:', error);
+      // Fallback suggestions
+      const fallbackSuggestions = [
+        { keyword: `best ${newKeyword}`, searchVolume: 5000, difficulty: 45, estimatedPosition: null },
+        { keyword: `${newKeyword} guide`, searchVolume: 3200, difficulty: 38, estimatedPosition: null }
+      ];
+      setSuggestions(fallbackSuggestions);
+      setShowSuggestions(true);
+    } finally {
+      setLoadingSuggestions(false);
     }
   };
 
@@ -135,39 +126,69 @@ const KeywordTracker = () => {
       setLoading(true);
       setError('');
       
-      // Create a new keyword with mock ranking data
-      const newKeywordData = {
-        _id: Date.now().toString(),
-        keyword: newKeyword.trim(),
-        rankings: [
-          { position: Math.floor(Math.random() * 50) + 1, date: '2024-01-01' },
-          { position: Math.floor(Math.random() * 45) + 1, date: '2024-01-02' },
-          { position: Math.floor(Math.random() * 40) + 1, date: '2024-01-03' },
-          { position: Math.floor(Math.random() * 35) + 1, date: '2024-01-04' },
-          { position: Math.floor(Math.random() * 30) + 1, date: '2024-01-05' }
-        ]
-      };
-      
-      // Try to add via API first
-      try {
-        const token = authService.getToken();
-        await axios.post('http://localhost:5000/api/keywords/add', 
-          { keyword: newKeyword },
-          { headers: { Authorization: `Bearer ${token}` }}
-        );
-        // If API succeeds, fetch updated list
-        fetchKeywords();
-      } catch (apiError) {
-        // If API fails, add to local state
-        console.log('API unavailable, adding locally:', apiError);
-        setKeywords(prev => [...prev, newKeywordData]);
-        setError('Keyword added locally - API unavailable');
-      }
-      
+      const token = authService.getToken();
+      const response = await axios.post(
+        'http://localhost:5000/api/keywords/add',
+        { 
+          keyword: newKeyword.trim(),
+          domain: domain.trim() || null
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      // Success - increment attempt counter
+      const newCount = attemptCount + 1;
+      setAttemptCount(newCount);
+      localStorage.setItem('keyword_analysis_attempts', newCount.toString());
+
+      setKeywords([response.data, ...keywords]);
       setNewKeyword('');
+      setDomain('');
+      setShowSuggestions(false);
+      setSuggestions([]);
+      
     } catch (error) {
-      console.error('Error adding keyword:', error);
-      setError('Error adding keyword');
+      console.error('Add keyword error:', error);
+      
+      // Check if it's a rate limit error
+      if (error.response?.status === 429) {
+        setError('🚫 Rate limit reached! You have used all 3 free keyword analyses.');
+      } else {
+        setError('Using demo keyword analysis - API unavailable');
+        setNewKeyword('');
+        setDomain('');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addSuggestedKeyword = async (suggestedKeyword) => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const token = authService.getToken();
+      const response = await axios.post(
+        'http://localhost:5000/api/keywords/add',
+        { 
+          keyword: suggestedKeyword,
+          domain: domain.trim() || null
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      setKeywords([response.data, ...keywords]);
+      setShowSuggestions(false);
+      setSuggestions([]);
+      
+    } catch (error) {
+      console.error('Add suggested keyword error:', error);
+      setError('Error adding suggested keyword');
     } finally {
       setLoading(false);
     }
@@ -175,36 +196,27 @@ const KeywordTracker = () => {
 
   const deleteKeyword = async (keywordId) => {
     try {
-      // Try API delete first
-      try {
-        const token = authService.getToken();
-        await axios.delete(`http://localhost:5000/api/keywords/${keywordId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        fetchKeywords();
-      } catch (apiError) {
-        // If API fails, remove from local state
-        console.log('API unavailable, deleting locally:', apiError);
-        setKeywords(prev => prev.filter(k => k._id !== keywordId));
-        setError('Keyword deleted locally - API unavailable');
-      }
+      const token = authService.getToken();
+      await axios.delete(`http://localhost:5000/api/keywords/${keywordId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setKeywords(keywords.filter(k => k._id !== keywordId));
     } catch (error) {
       console.error('Error deleting keyword:', error);
-      setError('Error deleting keyword');
     }
   };
 
-  const formatChartData = (rankings) => {
+  const formatRankingData = (rankings) => {
     return rankings.map((rank, index) => ({
-      name: `Day ${index + 1}`,
-      date: rank.date,
-      position: rank.position
+      day: `Day ${index + 1}`,
+      position: rank.position,
+      date: rank.date
     }));
   };
 
   return (
     <div className="space-y-6">
-      {/* Add Keyword Form */}
+      {/* Enhanced Add Keyword Form */}
       <motion.div 
         className="keyword-tracker"
         initial={{ opacity: 0, y: 20 }}
@@ -213,49 +225,199 @@ const KeywordTracker = () => {
       >
         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
           <FlagIcon className="w-6 h-6 mr-2" />
-          Track New Keyword
+          Real-Time Keyword Tracking
         </h2>
-        <form onSubmit={addKeyword} className="flex flex-col sm:flex-row gap-4">
-          <input
-            type="text"
-            value={newKeyword}
-            onChange={(e) => setNewKeyword(e.target.value)}
-            placeholder="Enter keyword to track"
-            className="futuristic-input flex-1"
-            required
-          />
-          <motion.button
-            type="submit"
-            disabled={loading}
-            className="futuristic-button"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {loading ? (
-              <>
-                <motion.div 
-                  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                />
-                Adding...
-              </>
-            ) : (
-              <>
-                <PlusIcon className="w-4 h-4 mr-2" />
-                Add Keyword
-              </>
-            )}
-          </motion.button>
+        
+        <form onSubmit={addKeyword} className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Keyword to Track
+              </label>
+              <input
+                type="text"
+                value={newKeyword}
+                onChange={(e) => setNewKeyword(e.target.value)}
+                placeholder="Enter keyword to track"
+                className="futuristic-input w-full"
+                required
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Your Domain (Optional)
+              </label>
+              <input
+                type="text"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                placeholder="example.com"
+                className="futuristic-input w-full"
+              />
+            </div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            <motion.button
+              type="submit"
+              disabled={loading}
+              className="futuristic-button flex-1"
+              whileHover={{ scale: loading ? 1 : 1.02 }}
+              whileTap={{ scale: loading ? 1 : 0.98 }}
+            >
+              {loading ? (
+                <>
+                  <motion.div 
+                    className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  Tracking...
+                </>
+              ) : (
+                <>
+                  <PlusIcon className="w-4 h-4 mr-2" />
+                  Track Keyword
+                </>
+              )}
+            </motion.button>
+            
+            <motion.button
+              type="button"
+              onClick={generateKeywordSuggestions}
+              disabled={loadingSuggestions || !newKeyword.trim()}
+              className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center"
+              whileHover={{ scale: loadingSuggestions ? 1 : 1.02 }}
+              whileTap={{ scale: loadingSuggestions ? 1 : 0.98 }}
+            >
+              {loadingSuggestions ? (
+                <>
+                  <motion.div 
+                    className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <LightBulbIcon className="w-4 h-4 mr-2" />
+                  Get Suggestions
+                </>
+              )}
+            </motion.button>
+          </div>
         </form>
+
+        {/* Rate Limit Tracker */}
+        <motion.div 
+          className="mt-4 bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-lg p-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <ShieldCheckIcon className="h-5 w-5 text-blue-500 mr-2" />
+              <span className="text-sm font-medium text-gray-700">
+                Keyword Analysis Usage
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="flex space-x-1">
+                {[1, 2, 3].map((num) => (
+                  <div
+                    key={num}
+                    className={`w-3 h-3 rounded-full transition-colors ${
+                      num <= attemptCount 
+                        ? attemptCount >= 3 
+                          ? 'bg-red-400' 
+                          : 'bg-blue-400'
+                        : 'bg-gray-200'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className={`text-sm font-semibold ${
+                attemptCount >= 3 ? 'text-red-600' : 'text-blue-600'
+              }`}>
+                {attemptCount}/3 used
+              </span>
+            </div>
+          </div>
+          
+          {attemptCount >= 3 ? (
+            <div className="mt-2 flex items-start">
+              <ClockIcon className="h-4 w-4 text-orange-500 mr-2 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-orange-700">
+                <strong>Limit reached:</strong> You have used all 3 free keyword analyses. 
+                Each analysis provides real search volume, difficulty, and ranking data.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-2 flex items-start">
+              <BoltIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-gray-600">
+                <strong>Remaining:</strong> {3 - attemptCount} free keyword analysis{3 - attemptCount !== 1 ? 'es' : ''} left. 
+                Each includes real search data, competitor analysis, and ranking tracking.
+              </p>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Keyword Suggestions */}
+        {showSuggestions && suggestions.length > 0 && (
+          <motion.div 
+            className="mt-4 bg-purple-50 border border-purple-200 rounded-lg p-4"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            transition={{ duration: 0.4 }}
+          >
+            <h3 className="text-sm font-semibold text-purple-800 mb-3 flex items-center">
+              <LightBulbIcon className="w-4 h-4 mr-2" />
+              Keyword Suggestions for "{newKeyword}"
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {suggestions.map((suggestion, index) => (
+                <motion.div
+                  key={index}
+                  className="bg-white border border-purple-200 rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => addSuggestedKeyword(suggestion.keyword)}
+                  whileHover={{ scale: 1.02 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-medium text-gray-800 text-sm">{suggestion.keyword}</span>
+                    <PlusIcon className="w-4 h-4 text-purple-500" />
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>Vol: {suggestion.searchVolume?.toLocaleString() || 'N/A'}</span>
+                    <span className={`font-medium ${
+                      suggestion.difficulty < 40 ? 'text-green-600' : 
+                      suggestion.difficulty < 70 ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
+                      Difficulty: {suggestion.difficulty || 'N/A'}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+        
         {error && (
           <motion.div 
             className="alert alert-error mt-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
           >
-            <ExclamationTriangleIcon className="w-5 h-5 mr-2 text-red-500" />
-            {error}
+            <div className="flex items-center">
+              <ExclamationTriangleIcon className="w-5 h-5 mr-3 text-amber-500" />
+              <p className="font-medium">{error}</p>
+            </div>
           </motion.div>
         )}
       </motion.div>
@@ -271,126 +433,182 @@ const KeywordTracker = () => {
           <ChartBarIcon className="w-6 h-6 mr-2" />
           Tracked Keywords ({keywords.length})
         </h2>
-        <div className="keyword-list">
-          {keywords.map((keyword, index) => (
-            <motion.div 
-              key={keyword._id} 
-              className="keyword-item"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              layout
-            >
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{keyword.keyword}</h3>
-                <div className="keyword-stats">
-                  <span className="text-sm text-gray-600">
-                    Latest Position: 
-                    <span className={`ml-1 px-2 py-1 rounded-full text-xs font-bold ${
-                      keyword.rankings[keyword.rankings.length - 1]?.position <= 10 
-                        ? 'bg-green-100 text-green-700' 
-                        : keyword.rankings[keyword.rankings.length - 1]?.position <= 50 
-                          ? 'bg-yellow-100 text-yellow-700' 
-                          : 'bg-red-100 text-red-700'
+        
+        {keywords.length === 0 ? (
+          <div className="text-center py-12">
+            <FlagIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 text-lg">No keywords tracked yet</p>
+            <p className="text-gray-500">Add your first keyword to start tracking rankings</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {keywords.map((keyword, index) => (
+              <motion.div
+                key={keyword._id}
+                className="keyword-card"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                      <MagnifyingGlassIcon className="w-5 h-5 mr-2" />
+                      {keyword.keyword}
+                    </h3>
+                    {keyword.domain && (
+                      <p className="text-sm text-gray-600 mt-1">Domain: {keyword.domain}</p>
+                    )}
+                    
+                    {/* Enhanced Keyword Metrics */}
+                    <div className="flex flex-wrap gap-4 mt-3">
+                      <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full">
+                        <span className="text-xs font-medium text-blue-700">
+                          Search Volume: {keyword.searchVolume?.toLocaleString() || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center bg-purple-50 px-3 py-1 rounded-full">
+                        <span className={`text-xs font-medium ${
+                          keyword.difficulty < 40 ? 'text-green-700' : 
+                          keyword.difficulty < 70 ? 'text-yellow-700' : 'text-red-700'
+                        }`}>
+                          Difficulty: {keyword.difficulty || 'N/A'}
+                        </span>
+                      </div>
+                      {keyword.analysis?.trend && (
+                        <div className={`flex items-center px-3 py-1 rounded-full ${
+                          keyword.analysis.trend === 'improving' ? 'bg-green-50' :
+                          keyword.analysis.trend === 'declining' ? 'bg-red-50' : 'bg-gray-50'
+                        }`}>
+                          <ArrowTrendingUpIcon className={`w-3 h-3 mr-1 ${
+                            keyword.analysis.trend === 'improving' ? 'text-green-600 rotate-0' :
+                            keyword.analysis.trend === 'declining' ? 'text-red-600 rotate-180' : 'text-gray-600'
+                          }`} />
+                          <span className={`text-xs font-medium ${
+                            keyword.analysis.trend === 'improving' ? 'text-green-700' :
+                            keyword.analysis.trend === 'declining' ? 'text-red-700' : 'text-gray-700'
+                          }`}>
+                            {keyword.analysis.trend} {keyword.analysis.trendPercentage && `(${keyword.analysis.trendPercentage}%)`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <motion.button
+                      onClick={() => deleteKeyword(keyword._id)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </motion.button>
+                  </div>
+                </div>
+
+                {/* Current Position */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">Current Position</span>
+                    <span className={`text-2xl font-bold px-3 py-1 rounded-lg ${
+                      keyword.rankings[keyword.rankings.length - 1]?.position <= 3 ? 'text-green-600 bg-green-50' :
+                      keyword.rankings[keyword.rankings.length - 1]?.position <= 10 ? 'text-blue-600 bg-blue-50' :
+                      'text-gray-600 bg-gray-50'
                     }`}>
                       #{keyword.rankings[keyword.rankings.length - 1]?.position || 'N/A'}
                     </span>
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    <ArrowTrendingUpIcon className="w-4 h-4 mr-1" /> {keyword.rankings.length} data points
-                  </span>
+                  </div>
                 </div>
-                </div>
-                <motion.button
-                  onClick={() => deleteKeyword(keyword._id)}
-                  className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors duration-200 text-sm flex items-center gap-1 self-start"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <TrashIcon className="w-4 h-4" />
-                  <span className="hidden sm:inline">Delete</span>
-                </motion.button>
-              </div>
 
-              {keyword.rankings && keyword.rankings.length > 0 ? (
-                <div className="keyword-chart-container">
-                  <h4 className="text-sm font-medium text-gray-600 mb-3 flex items-center">
-                    <ChartBarIcon className="w-4 h-4 mr-2" />
-                    Ranking History - {keyword.keyword}
-                  </h4>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart 
-                        data={formatChartData(keyword.rankings)} 
-                        margin={{ top: 10, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(74, 144, 226, 0.1)" />
-                        <XAxis 
-                          dataKey="name" 
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fill: '#666', fontSize: 12 }}
-                        />
-                        <YAxis 
-                          reversed 
-                          domain={[1, 'dataMax + 5']} 
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fill: '#666', fontSize: 12 }}
-                          label={{ value: 'Position', angle: -90, position: 'insideLeft' }}
-                        />
-                        <Tooltip 
-                          labelFormatter={(value) => `${value}`}
-                          formatter={(value) => [`Position #${value}`, 'Ranking']}
-                          contentStyle={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                            border: '1px solid rgba(74, 144, 226, 0.2)',
-                            borderRadius: '8px',
-                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                            fontSize: '14px'
-                          }}
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="position" 
-                          stroke="#4a90e2" 
-                          strokeWidth={3}
-                          dot={{ fill: '#4a90e2', strokeWidth: 2, r: 5 }}
-                          activeDot={{ r: 7, stroke: '#4a90e2', strokeWidth: 2, fill: '#ffffff' }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
+                {/* Ranking Chart */}
+                <div className="h-64 mb-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={formatRankingData(keyword.rankings)}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis 
+                        dataKey="day" 
+                        stroke="#666"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="#666"
+                        fontSize={12}
+                        domain={[1, 50]}
+                        reversed={true}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: '#fff',
+                          border: '1px solid #ddd',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="position" 
+                        stroke="#3b82f6" 
+                        strokeWidth={3}
+                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, fill: '#1d4ed8' }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
-              ) : (
-                <div className="h-32 mt-4 bg-gray-50 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-2xl mb-2">
-                      <ArrowTrendingUpIcon className="w-8 h-8 mx-auto text-blue-500" />
+
+                {/* Competitors */}
+                {keyword.competitors && keyword.competitors.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Top Competitors</h4>
+                    <div className="space-y-2">
+                      {keyword.competitors.slice(0, 3).map((competitor, idx) => (
+                        <div key={idx} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg">
+                          <div className="flex items-center">
+                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mr-3 ${
+                              competitor.position === 1 ? 'bg-yellow-500' :
+                              competitor.position === 2 ? 'bg-gray-400' :
+                              competitor.position === 3 ? 'bg-orange-500' : 'bg-blue-500'
+                            }`}>
+                              {competitor.position}
+                            </span>
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">{competitor.domain}</p>
+                              {competitor.title && (
+                                <p className="text-xs text-gray-600">{competitor.title}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-sm text-gray-500">No ranking data available yet</p>
                   </div>
-                </div>
-              )}
-            </motion.div>
-          ))}
-          
-          {keywords.length === 0 && (
-            <motion.div 
-              className="text-center py-12"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="text-6xl mb-4">
-                <FlagIcon className="w-16 h-16 mx-auto text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">No Keywords Tracked Yet</h3>
-              <p className="text-gray-500">Add your first keyword above to start tracking your SEO performance!</p>
-            </motion.div>
-          )}
-        </div>
+                )}
+
+                {/* Opportunities */}
+                {keyword.analysis?.opportunities && keyword.analysis.opportunities.length > 0 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <h4 className="text-sm font-medium text-yellow-800 mb-2 flex items-center">
+                      <LightBulbIcon className="w-4 h-4 mr-2" />
+                      SEO Opportunities
+                    </h4>
+                    <div className="space-y-1">
+                      {keyword.analysis.opportunities.map((opportunity, idx) => (
+                        <div key={idx} className="flex items-start">
+                          <FireIcon className={`w-3 h-3 mr-2 mt-0.5 ${
+                            opportunity.priority === 'high' ? 'text-red-500' : 
+                            opportunity.priority === 'medium' ? 'text-yellow-500' : 'text-green-500'
+                          }`} />
+                          <p className="text-xs text-yellow-700">{opportunity.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        )}
       </motion.div>
     </div>
   );

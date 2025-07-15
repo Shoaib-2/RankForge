@@ -10,6 +10,10 @@ const keywordSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  domain: {
+    type: String,
+    default: null
+  },
   rankings: [{
     date: {
       type: Date,
@@ -26,11 +30,25 @@ const keywordSchema = new mongoose.Schema({
   competitors: [{
     domain: String,
     position: Number,
+    title: String,
+    url: String,
     lastUpdated: {
       type: Date,
       default: Date.now
     }
   }],
+  searchVolume: {
+    type: Number,
+    default: 0
+  },
+  difficulty: {
+    type: Number,
+    default: 50
+  },
+  lastTracked: {
+    type: Date,
+    default: Date.now
+  },
   createdAt: {
     type: Date,
     default: Date.now
