@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const seoController = require('../controllers/seoController');
 const { authMiddleware } = require('../middleware/auth');
-const { seoAnalysisLimiter } = require('../middleware/rateLimiter');
+const { seoAnalysisLimiter, seoAnalysisLimiterStatusOnly } = require('../middleware/rateLimiter');
 const { validationRules, handleValidationErrors } = require('../middleware/validation');
 
 router.post('/analyze', 
@@ -13,6 +13,6 @@ router.post('/analyze',
   seoController.analyzeSite
 );
 
-router.get('/history', authMiddleware, seoController.getAnalysisHistory);
+router.get('/history', authMiddleware, seoAnalysisLimiterStatusOnly, seoController.getAnalysisHistory);
 
 module.exports = router;

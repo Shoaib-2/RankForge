@@ -6,6 +6,9 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 const authService = {
   // Set up axios interceptors for automatic token handling
   setupAxiosInterceptors() {
+    let refreshAttempts = 0;
+    const maxRefreshAttempts = 3;
+    
     // Request interceptor to add auth header
     axios.interceptors.request.use(
       (config) => {
@@ -24,29 +27,54 @@ const authService = {
       async (error) => {
         const originalRequest = error.config;
         
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Prevent infinite loops by checking if this is already a refresh token request
+        if (originalRequest.url?.includes('/auth/refresh-token')) {
+          // If refresh token request failed, logout immediately
+          refreshAttempts = 0; // Reset counter
+          this.logout();
+          window.location.href = '/login';
+          return Promise.reject(error);
+        }
+        
+        if (error.response?.status === 401 && !originalRequest._retry && refreshAttempts < maxRefreshAttempts) {
           originalRequest._retry = true;
+          refreshAttempts++;
           
           try {
             const refreshToken = this.getRefreshToken();
-            if (refreshToken) {
-              const response = await axios.post(`${API_URL}/auth/refresh-token`, {
-                refreshToken
-              });
-              
-              const { accessToken } = response.data;
-              localStorage.setItem('accessToken', accessToken);
-              
-              // Retry the original request with new token
-              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-              return axios(originalRequest);
+            if (!refreshToken) {
+              // No refresh token, logout immediately
+              refreshAttempts = 0; // Reset counter
+              this.logout();
+              window.location.href = '/login';
+              return Promise.reject(error);
             }
+            
+            const response = await axios.post(`${API_URL}/auth/refresh-token`, {
+              refreshToken
+            });
+            
+            const { accessToken } = response.data;
+            localStorage.setItem('accessToken', accessToken);
+            refreshAttempts = 0; // Reset counter on success
+            
+            // Retry the original request with new token
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            return axios(originalRequest);
           } catch (refreshError) {
             // Refresh failed, logout user
+            refreshAttempts = 0; // Reset counter
             this.logout();
             window.location.href = '/login';
             return Promise.reject(refreshError);
           }
+        }
+        
+        // If max refresh attempts reached, logout
+        if (refreshAttempts >= maxRefreshAttempts) {
+          refreshAttempts = 0; // Reset counter
+          this.logout();
+          window.location.href = '/login';
         }
         
         return Promise.reject(error);

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import authService from '../../../services/authService';
+import { useSEO } from '../../../context/SeoContext';
 import { 
   FlagIcon, 
   PlusIcon, 
@@ -29,14 +30,20 @@ const KeywordTracker = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   
-  // Track rate limit attempts
-  const [attemptCount, setAttemptCount] = useState(() => {
-    return parseInt(localStorage.getItem('keyword_analysis_attempts') || '0');
-  });
+  // Use centralized rate limit state from SEO context
+  const {
+    attemptCount,
+    dailyLimit,
+    rateLimitLoading,
+    updateRateLimitFromHeaders,
+    setRateLimitExhausted
+  } = useSEO();
 
   useEffect(() => {
     fetchKeywords();
   }, []);
+
+
 
   const fetchKeywords = async () => {
     try {
@@ -122,6 +129,12 @@ const KeywordTracker = () => {
     e.preventDefault();
     if (!newKeyword.trim()) return;
     
+    // Check if rate limit is reached (only if not loading)
+    if (!rateLimitLoading && attemptCount >= dailyLimit) {
+      setError('🚫 Rate limit reached! You have used all 10 free keyword analyses. You\'ve exhausted your daily API usage. The limit will reset in 24 hours.');
+      return;
+    }
+    
     try {
       setLoading(true);
       setError('');
@@ -138,10 +151,8 @@ const KeywordTracker = () => {
         }
       );
 
-      // Success - increment attempt counter
-      const newCount = attemptCount + 1;
-      setAttemptCount(newCount);
-      localStorage.setItem('keyword_analysis_attempts', newCount.toString());
+      // Update rate limit info from response headers using centralized function
+      updateRateLimitFromHeaders(response.headers);
 
       setKeywords([response.data, ...keywords]);
       setNewKeyword('');
@@ -154,7 +165,8 @@ const KeywordTracker = () => {
       
       // Check if it's a rate limit error
       if (error.response?.status === 429) {
-        setError('🚫 Rate limit reached! You have used all 3 free keyword analyses.');
+        setError('🚫 Rate limit reached! You have used all 10 free keyword analyses. You\'ve exhausted your daily API usage. The limit will reset in 24 hours.');
+        setRateLimitExhausted();
       } else {
         setError('Using demo keyword analysis - API unavailable');
         setNewKeyword('');
@@ -260,10 +272,14 @@ const KeywordTracker = () => {
           <div className="flex flex-col sm:flex-row gap-3">
             <motion.button
               type="submit"
-              disabled={loading}
-              className="futuristic-button flex-1"
-              whileHover={{ scale: loading ? 1 : 1.02 }}
-              whileTap={{ scale: loading ? 1 : 0.98 }}
+              disabled={loading || rateLimitLoading || attemptCount >= dailyLimit}
+              className={`futuristic-button flex-1 ${
+                (rateLimitLoading || attemptCount >= dailyLimit)
+                  ? 'opacity-50 cursor-not-allowed bg-gray-400' 
+                  : ''
+              }`}
+              whileHover={{ scale: (loading || rateLimitLoading || attemptCount >= dailyLimit) ? 1 : 1.02 }}
+              whileTap={{ scale: (loading || rateLimitLoading || attemptCount >= dailyLimit) ? 1 : 0.98 }}
             >
               {loading ? (
                 <>
@@ -273,6 +289,20 @@ const KeywordTracker = () => {
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   />
                   Tracking...
+                </>
+              ) : rateLimitLoading ? (
+                <>
+                  <motion.div 
+                    className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  Loading...
+                </>
+              ) : attemptCount >= dailyLimit ? (
+                <>
+                  <ClockIcon className="w-4 h-4 mr-2" />
+                  Limit Reached
                 </>
               ) : (
                 <>
@@ -324,41 +354,63 @@ const KeywordTracker = () => {
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="flex space-x-1">
-                {[1, 2, 3].map((num) => (
-                  <div
-                    key={num}
-                    className={`w-3 h-3 rounded-full transition-colors ${
-                      num <= attemptCount 
-                        ? attemptCount >= 3 
-                          ? 'bg-red-400' 
-                          : 'bg-blue-400'
-                        : 'bg-gray-200'
-                    }`}
+              {rateLimitLoading ? (
+                <div className="flex items-center">
+                  <motion.div 
+                    className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full mr-2"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   />
-                ))}
-              </div>
-              <span className={`text-sm font-semibold ${
-                attemptCount >= 3 ? 'text-red-600' : 'text-blue-600'
-              }`}>
-                {attemptCount}/3 used
-              </span>
+                  <span className="text-sm text-gray-500">Loading...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex space-x-1">
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                      <div
+                        key={num}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          num <= attemptCount 
+                            ? attemptCount >= dailyLimit 
+                              ? 'bg-red-400' 
+                              : 'bg-blue-400'
+                            : 'bg-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className={`text-sm font-semibold ${
+                    attemptCount >= dailyLimit ? 'text-red-600' : 'text-blue-600'
+                  }`}>
+                    {attemptCount}/{dailyLimit} used
+                  </span>
+                </>
+              )}
             </div>
           </div>
           
-          {attemptCount >= 3 ? (
+          {rateLimitLoading ? (
+            <div className="mt-2 flex items-start">
+              <motion.div 
+                className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full mr-2 mt-0.5"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+              <p className="text-xs text-gray-600">Loading rate limit status...</p>
+            </div>
+          ) : attemptCount >= dailyLimit ? (
             <div className="mt-2 flex items-start">
               <ClockIcon className="h-4 w-4 text-orange-500 mr-2 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-orange-700">
-                <strong>Limit reached:</strong> You have used all 3 free keyword analyses. 
-                Each analysis provides real search volume, difficulty, and ranking data.
+                <strong>Limit reached:</strong> You have used all 10 free keyword analyses. 
+                You've exhausted your daily API usage. The limit will reset in 24 hours.
               </p>
             </div>
           ) : (
             <div className="mt-2 flex items-start">
               <BoltIcon className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-gray-600">
-                <strong>Remaining:</strong> {3 - attemptCount} free keyword analysis{3 - attemptCount !== 1 ? 'es' : ''} left. 
+                <strong>Remaining:</strong> {dailyLimit - attemptCount} free keyword analysis{dailyLimit - attemptCount !== 1 ? 'es' : ''} left. 
                 Each includes real search data, competitor analysis, and ranking tracking.
               </p>
             </div>

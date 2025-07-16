@@ -4,13 +4,16 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const { generalLimiter, speedLimiter } = require('./middleware/rateLimiter');
+const { generalLimiter, speedLimiter, clearOldCacheEntries } = require('./middleware/rateLimiter');
 const { sanitizeInput } = require('./middleware/validation');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { logger, requestLogger } = require('./utils/logger');
 require('dotenv').config();
 
 const app = express();
+
+// Clear old cache entries on server startup
+clearOldCacheEntries();
 
 // CORS configuration to allow frontend to communicate with backend
 const corsOptions = {
@@ -73,6 +76,9 @@ app.use('/api/export', exportRoutes);
 
 const dashboardRoutes = require('./routes/dashboard');
 app.use('/api/dashboard', dashboardRoutes);
+
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
 
 // Basic route
 app.get('/api/health', (req, res) => {

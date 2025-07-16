@@ -4,7 +4,23 @@ const slowDown = require('express-slow-down');
 const NodeCache = require('node-cache');
 
 // Cache to track email-based requests
-const emailCache = new NodeCache({ stdTTL: 3600 }); // 1 hour cache
+const emailCache = new NodeCache({ stdTTL: 0 }); // No default TTL, we'll set individual expiry times
+
+// Function to clear old cache entries and reset daily limits
+const clearOldCacheEntries = () => {
+  const today = new Date().toISOString().split('T')[0];
+  const keys = emailCache.keys();
+  
+  keys.forEach(key => {
+    // If it's a daily SEO key but not for today, delete it
+    if (key.startsWith('seo_') && !key.endsWith(`_${today}`)) {
+      emailCache.del(key);
+    }
+  });
+};
+
+// Run cleanup every hour
+setInterval(clearOldCacheEntries, 3600000); // 1 hour in milliseconds
 
 // General rate limiter for all requests
 const generalLimiter = rateLimit({
@@ -87,26 +103,61 @@ const seoAnalysisLimiter = (req, res, next) => {
     });
   }
 
-  const userKey = `seo_${userId || email}`;
+  // Create a daily key that includes today's date
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  const userKey = `seo_${userId || email}_${today}`;
   const currentCount = emailCache.get(userKey) || 0;
   
-  // Free users: 3 requests per day
-  const dailyLimit = 3;
+  // Free users: 10 requests per day
+  const dailyLimit = 10;
   
   if (currentCount >= dailyLimit) {
     return res.status(429).json({
       success: false,
-      message: `Daily SEO analysis limit reached (${dailyLimit} analyses per day). Upgrade to premium for unlimited access.`,
+      message: `Daily SEO analysis limit reached (${dailyLimit} analyses per day). You've exhausted your daily API usage. The limit will reset in 24 hours.`,
       limit: dailyLimit,
       remaining: 0
     });
   }
   
-  // Set with 24-hour expiry for daily limits
-  emailCache.set(userKey, currentCount + 1, 86400); // 24 hours
+  // Calculate seconds until end of day for TTL
+  const now = new Date();
+  const endOfDay = new Date(now);
+  endOfDay.setHours(23, 59, 59, 999);
+  const secondsUntilEndOfDay = Math.ceil((endOfDay - now) / 1000);
+  
+  // Set with expiry at end of day
+  emailCache.set(userKey, currentCount + 1, secondsUntilEndOfDay);
   
   // Add remaining count to response headers
   res.setHeader('X-RateLimit-Remaining', dailyLimit - currentCount - 1);
+  res.setHeader('X-RateLimit-Limit', dailyLimit);
+  
+  next();
+};
+
+// SEO analysis rate limiter status checker (doesn't increment count)
+const seoAnalysisLimiterStatusOnly = (req, res, next) => {
+  const userId = req.userId; // Assuming auth middleware sets this
+  const email = req.user?.email; // Backup identifier
+  
+  if (!userId && !email) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required'
+    });
+  }
+
+  // Create a daily key that includes today's date
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  const userKey = `seo_${userId || email}_${today}`;
+  const currentCount = emailCache.get(userKey) || 0;
+  
+  // Free users: 10 requests per day
+  const dailyLimit = 10;
+  
+  // Add remaining count to response headers (without incrementing)
+  res.setHeader('X-RateLimit-Remaining', dailyLimit - currentCount);
   res.setHeader('X-RateLimit-Limit', dailyLimit);
   
   next();
@@ -131,7 +182,7 @@ const emailRateLimiter = (req, res, next) => {
     });
   }
   
-  emailCache.set(emailKey, currentCount + 1);
+  emailCache.set(emailKey, currentCount + 1, 3600); // 1 hour cache
   next();
 };
 
@@ -158,12 +209,40 @@ const loginEmailLimiter = (req, res, next) => {
   next();
 };
 
+// Function to manually reset a user's daily SEO analysis count (useful for testing)
+const resetUserDailyLimit = (userId, email) => {
+  const today = new Date().toISOString().split('T')[0];
+  const userKey = `seo_${userId || email}_${today}`;
+  emailCache.del(userKey);
+  console.log(`Reset daily limit for user: ${userId || email}`);
+};
+
+// Function to manually clear all SEO analysis cache (useful for testing)
+const clearAllSEOAnalysisCache = () => {
+  const keys = emailCache.keys();
+  let clearedCount = 0;
+  
+  keys.forEach(key => {
+    if (key.startsWith('seo_')) {
+      emailCache.del(key);
+      clearedCount++;
+    }
+  });
+  
+  console.log(`Cleared ${clearedCount} SEO analysis cache entries`);
+  return clearedCount;
+};
+
 module.exports = {
   generalLimiter,
   authLimiter,
   loginLimiter,
   speedLimiter,
   seoAnalysisLimiter,
+  seoAnalysisLimiterStatusOnly, // Export the status checker
   emailRateLimiter,
-  loginEmailLimiter
+  loginEmailLimiter,
+  resetUserDailyLimit, // Export the reset function for testing
+  clearOldCacheEntries, // Export the cleanup function
+  clearAllSEOAnalysisCache // Export the function to clear all SEO analysis cache
 };

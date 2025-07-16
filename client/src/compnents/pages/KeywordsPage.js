@@ -17,7 +17,7 @@ const KeywordsPage = () => {
             </div>
             <div className="ml-2">
               <p className="text-sm text-green-700">
-                <strong>Note:</strong> Keyword analysis is included in the 3 SEO analyses per session limit. 
+                <strong>Note:</strong> Keyword analysis is included in the 10 analyses per day limit. 
                 This ensures optimal performance and fair resource allocation across all users.
               </p>
             </div>

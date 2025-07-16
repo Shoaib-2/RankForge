@@ -21,7 +21,7 @@ const SEOAnalysisPage = () => {
               </h3>
               <div className="mt-2 text-sm text-blue-700">
                 <p>
-                  <strong>Free Tier:</strong> You can perform <span className="font-semibold text-blue-900">3 SEO analyses</span> per session to prevent API abuse.
+                  <strong>Free Tier:</strong> You can perform <span className="font-semibold text-blue-900">10 SEO analyses</span> per day to ensure fair usage.
                   This includes real Google PageSpeed insights and comprehensive SEO scoring.
                 </p>
                 <div className="mt-2 flex items-center space-x-4 text-xs">
