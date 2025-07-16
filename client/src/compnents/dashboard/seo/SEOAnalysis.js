@@ -372,45 +372,99 @@ const SEOAnalysis = () => {
             </div>
           </motion.div>
 
-          {/* Recommendations Section */}
+          {/* Enhanced Recommendations Section */}
           <motion.div 
             className="seo-analysis-section"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center">
-              <LightBulbIcon className="w-5 h-5 mr-2" />
-              Recommendations ({results.recommendations.length})
-            </h3>
-            <div className="analysis-results">
-              {results.recommendations.map((rec, index) => (
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <LightBulbIcon className="w-5 h-5 mr-2" />
+                SEO Recommendations ({results.recommendations?.length || 0})
+              </h3>
+              <div className="flex gap-2">
+                <span className="priority-legend critical">Critical</span>
+                <span className="priority-legend high">High</span>
+                <span className="priority-legend medium">Medium</span>
+                <span className="priority-legend low">Low</span>
+              </div>
+            </div>
+            
+            <div className="recommendations-grid">
+              {results.recommendations?.map((rec, index) => (
                 <motion.div
-                  key={rec.id}
-                  className="analysis-item"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  key={`${rec.category}-${index}`}
+                  className={`recommendation-card priority-${rec.priority}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
                 >
-                  <div className="flex items-start">
-                    <div className={`score-badge ${
-                      rec.priority === 'high' ? 'score-poor' : 'score-good'
-                    }`}>
-                      {rec.priority === 'high' ? <FireIcon className="w-5 h-5 text-red-500" /> : <BoltIcon className="w-5 h-5 text-yellow-500" />}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-gray-800">{rec.type}</h4>
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          rec.priority === 'high' 
-                            ? 'bg-red-100 text-red-700' 
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}>
+                  <div className="recommendation-header">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center">
+                        <div className={`priority-icon priority-${rec.priority}`}>
+                          {rec.priority === 'critical' && <FireIcon className="w-5 h-5" />}
+                          {rec.priority === 'high' && <ExclamationTriangleIcon className="w-5 h-5" />}
+                          {rec.priority === 'medium' && <BoltIcon className="w-5 h-5" />}
+                          {rec.priority === 'low' && <LightBulbIcon className="w-5 h-5" />}
+                        </div>
+                        <div className="ml-3">
+                          <h4 className="font-semibold text-gray-800">{rec.title}</h4>
+                          <span className="text-xs text-gray-500 font-medium">{rec.category}</span>
+                        </div>
+                      </div>
+                      <div className="recommendation-meta">
+                        <span className={`priority-badge priority-${rec.priority}`}>
                           {rec.priority.toUpperCase()}
                         </span>
+                        {rec.impact && (
+                          <div className="impact-score">
+                            <span className="text-xs text-gray-500">Impact:</span>
+                            <div className="impact-bar">
+                              <div 
+                                className="impact-fill"
+                                style={{ width: `${(rec.impact / 10) * 100}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <p className="text-gray-600">{rec.description}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="recommendation-content">
+                    <p className="text-gray-600 mb-4">{rec.description}</p>
+                    
+                    {rec.actionItems && (
+                      <div className="action-items">
+                        <h5 className="text-sm font-semibold text-gray-700 mb-2">Action Items:</h5>
+                        <ul className="action-list">
+                          {rec.actionItems.map((item, itemIndex) => (
+                            <li key={itemIndex} className="action-item">
+                              <CheckCircleIcon className="w-4 h-4 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                              <span className="text-sm text-gray-600">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    <div className="recommendation-footer">
+                      {rec.timeEstimate && (
+                        <div className="time-estimate">
+                          <span className="text-xs text-gray-500">Est. Time:</span>
+                          <span className="text-xs font-medium text-gray-700">{rec.timeEstimate}</span>
+                        </div>
+                      )}
+                      {rec.expectedImpact && (
+                        <div className="expected-impact">
+                          <span className="text-xs text-gray-500">Expected Impact:</span>
+                          <span className="text-xs font-medium text-gray-700">{rec.expectedImpact}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>

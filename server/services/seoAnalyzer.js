@@ -5,6 +5,25 @@ const sslAnalyzer = require('./sslAnalyzer');
 const cacheService = require('./cacheService');
 
 class SeoAnalyzer {
+  constructor() {
+    // Enhanced recommendation engine with impact scoring
+    this.recommendationEngine = {
+      categories: {
+        TECHNICAL: 'Technical SEO',
+        CONTENT: 'Content Optimization', 
+        ON_PAGE: 'On-Page SEO',
+        PERFORMANCE: 'Performance',
+        MOBILE: 'Mobile & Accessibility',
+        SECURITY: 'Security'
+      },
+      priorities: {
+        CRITICAL: { level: 'critical', impact: 10, color: 'red' },
+        HIGH: { level: 'high', impact: 8, color: 'orange' },
+        MEDIUM: { level: 'medium', impact: 5, color: 'yellow' },
+        LOW: { level: 'low', impact: 3, color: 'blue' }
+      }
+    };
+  }
   async analyzeContent(url) {
     try {
       console.log('Starting comprehensive SEO analysis for:', url);
@@ -52,6 +71,10 @@ class SeoAnalyzer {
           mobileResponsiveness: mobileAnalysis
         }
       };
+
+      // Generate comprehensive recommendations
+      result.recommendations = this.generateEnhancedRecommendations(result, $, url);
+      result.score = this.calculateSEOScore(result);
 
       // Cache the result if the URL is cacheable
       if (cacheService.shouldCache(url)) {
@@ -312,6 +335,435 @@ class SeoAnalyzer {
         largestContentfulPaint: '2.5s'
       }
     };
+  }
+
+  // Enhanced recommendation generation system
+  generateEnhancedRecommendations(analysis, $, url) {
+    const recommendations = [];
+    
+    // Technical SEO Recommendations
+    recommendations.push(...this.generateTechnicalRecommendations(analysis, $, url));
+    
+    // Content Optimization Recommendations
+    recommendations.push(...this.generateContentRecommendations(analysis, $));
+    
+    // On-Page SEO Recommendations
+    recommendations.push(...this.generateOnPageRecommendations(analysis, $));
+    
+    // Performance Recommendations
+    recommendations.push(...this.generatePerformanceRecommendations(analysis));
+    
+    // Mobile & Accessibility Recommendations
+    recommendations.push(...this.generateMobileRecommendations(analysis, $));
+    
+    // Security Recommendations
+    recommendations.push(...this.generateSecurityRecommendations(analysis, url));
+    
+    // Sort by priority and impact
+    return recommendations.sort((a, b) => {
+      const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+      return priorityOrder[b.priority] - priorityOrder[a.priority];
+    });
+  }
+
+  generateTechnicalRecommendations(analysis, $, url) {
+    const recommendations = [];
+    const { categories, priorities } = this.recommendationEngine;
+
+    // Schema markup check
+    const structuredData = $('script[type="application/ld+json"]');
+    if (structuredData.length === 0) {
+      recommendations.push({
+        category: categories.TECHNICAL,
+        title: 'Add Schema Markup',
+        priority: priorities.HIGH.level,
+        impact: priorities.HIGH.impact,
+        description: 'Schema markup helps search engines understand your content better and can improve rich snippets.',
+        actionItems: [
+          'Add Organization schema for business information',
+          'Implement WebPage schema for page content',
+          'Add Product schema if applicable',
+          'Use Google\'s Structured Data Testing Tool to validate'
+        ],
+        timeEstimate: '2-4 hours',
+        expectedImpact: 'Improved search result appearance and potential rich snippets'
+      });
+    }
+
+    // Robots.txt check
+    const robotsMeta = $('meta[name="robots"]');
+    if (robotsMeta.length === 0) {
+      recommendations.push({
+        category: categories.TECHNICAL,
+        title: 'Add Robots Meta Tag',
+        priority: priorities.MEDIUM.level,
+        impact: priorities.MEDIUM.impact,
+        description: 'Robots meta tags give search engines specific instructions about how to crawl and index your page.',
+        actionItems: [
+          'Add <meta name="robots" content="index, follow"> for normal pages',
+          'Use "noindex" for pages you don\'t want indexed',
+          'Implement canonical tags for duplicate content'
+        ],
+        timeEstimate: '30 minutes',
+        expectedImpact: 'Better control over search engine crawling and indexing'
+      });
+    }
+
+    // XML Sitemap check (basic implementation)
+    recommendations.push({
+      category: categories.TECHNICAL,
+      title: 'XML Sitemap Optimization',
+      priority: priorities.MEDIUM.level,
+      impact: priorities.MEDIUM.impact,
+      description: 'Ensure your XML sitemap is properly configured and submitted to search engines.',
+      actionItems: [
+        'Create or update XML sitemap with all important pages',
+        'Submit sitemap to Google Search Console',
+        'Include lastmod dates for better crawl efficiency',
+        'Keep sitemap under 50MB and 50,000 URLs'
+      ],
+      timeEstimate: '1-2 hours',
+      expectedImpact: 'Improved search engine discovery and indexing of your pages'
+    });
+
+    return recommendations;
+  }
+
+  generateContentRecommendations(analysis, $) {
+    const recommendations = [];
+    const { categories, priorities } = this.recommendationEngine;
+
+    // Content length analysis
+    const textContent = $('body').text().replace(/\s+/g, ' ').trim();
+    const wordCount = textContent.split(' ').length;
+    
+    if (wordCount < 300) {
+      recommendations.push({
+        category: categories.CONTENT,
+        title: 'Increase Content Length',
+        priority: priorities.HIGH.level,
+        impact: priorities.HIGH.impact,
+        description: `Your page has only ${wordCount} words. Pages with substantial content typically perform better in search results.`,
+        actionItems: [
+          'Aim for at least 300-500 words of quality content',
+          'Add detailed descriptions and explanations',
+          'Include relevant examples and case studies',
+          'Ensure content provides value to users'
+        ],
+        timeEstimate: '2-4 hours',
+        expectedImpact: 'Better search rankings and user engagement'
+      });
+    }
+
+    // Heading structure analysis
+    const headings = {
+      h1: $('h1').length,
+      h2: $('h2').length,
+      h3: $('h3').length
+    };
+
+    if (headings.h1 === 0) {
+      recommendations.push({
+        category: categories.CONTENT,
+        title: 'Add H1 Heading',
+        priority: priorities.CRITICAL.level,
+        impact: priorities.CRITICAL.impact,
+        description: 'Missing H1 tag. Every page should have exactly one H1 tag that describes the main topic.',
+        actionItems: [
+          'Add a single H1 tag near the top of your page',
+          'Include your primary keyword in the H1',
+          'Keep H1 under 60 characters',
+          'Make sure H1 accurately describes page content'
+        ],
+        timeEstimate: '15 minutes',
+        expectedImpact: 'Significant improvement in search engine understanding and rankings'
+      });
+    } else if (headings.h1 > 1) {
+      recommendations.push({
+        category: categories.CONTENT,
+        title: 'Fix Multiple H1 Tags',
+        priority: priorities.HIGH.level,
+        impact: priorities.HIGH.impact,
+        description: `Found ${headings.h1} H1 tags. Use only one H1 per page for better SEO.`,
+        actionItems: [
+          'Keep only one H1 tag for the main page topic',
+          'Convert other H1s to H2 or H3 tags',
+          'Ensure proper heading hierarchy (H1 > H2 > H3)',
+          'Use headings to create logical content structure'
+        ],
+        timeEstimate: '30 minutes',
+        expectedImpact: 'Improved content structure and search engine understanding'
+      });
+    }
+
+    // Image alt text analysis
+    const images = $('img');
+    const imagesWithoutAlt = images.filter((i, img) => !$(img).attr('alt')).length;
+    
+    if (imagesWithoutAlt > 0) {
+      recommendations.push({
+        category: categories.CONTENT,
+        title: 'Add Alt Text to Images',
+        priority: priorities.HIGH.level,
+        impact: priorities.HIGH.impact,
+        description: `${imagesWithoutAlt} images are missing alt text. Alt text improves accessibility and SEO.`,
+        actionItems: [
+          'Add descriptive alt text to all images',
+          'Include relevant keywords naturally',
+          'Keep alt text under 125 characters',
+          'Use empty alt="" for decorative images'
+        ],
+        timeEstimate: '1-2 hours',
+        expectedImpact: 'Better accessibility and image search rankings'
+      });
+    }
+
+    return recommendations;
+  }
+
+  generateOnPageRecommendations(analysis, $) {
+    const recommendations = [];
+    const { categories, priorities } = this.recommendationEngine;
+
+    // Meta description analysis
+    if (!analysis.metaAnalysis.description) {
+      recommendations.push({
+        category: categories.ON_PAGE,
+        title: 'Add Meta Description',
+        priority: priorities.CRITICAL.level,
+        impact: priorities.CRITICAL.impact,
+        description: 'Missing meta description. This is crucial for search result snippets and click-through rates.',
+        actionItems: [
+          'Write a compelling 120-160 character meta description',
+          'Include your primary keyword naturally',
+          'Create a unique description for each page',
+          'Focus on what users will gain from visiting your page'
+        ],
+        timeEstimate: '30 minutes',
+        expectedImpact: 'Improved click-through rates from search results'
+      });
+    }
+
+    // Title tag analysis
+    if (!analysis.metaAnalysis.title) {
+      recommendations.push({
+        category: categories.ON_PAGE,
+        title: 'Add Title Tag',
+        priority: priorities.CRITICAL.level,
+        impact: priorities.CRITICAL.impact,
+        description: 'Missing title tag. This is one of the most important on-page SEO elements.',
+        actionItems: [
+          'Create a unique, descriptive title for the page',
+          'Keep title between 30-60 characters',
+          'Include primary keyword near the beginning',
+          'Make it compelling for users to click'
+        ],
+        timeEstimate: '15 minutes',
+        expectedImpact: 'Major improvement in search rankings and click-through rates'
+      });
+    }
+
+    // Internal linking analysis
+    const internalLinks = $('a[href^="/"], a[href*="' + ($('link[rel="canonical"]').attr('href') || '') + '"]').length;
+    if (internalLinks < 3) {
+      recommendations.push({
+        category: categories.ON_PAGE,
+        title: 'Improve Internal Linking',
+        priority: priorities.MEDIUM.level,
+        impact: priorities.MEDIUM.impact,
+        description: 'Limited internal linking detected. Internal links help search engines understand site structure.',
+        actionItems: [
+          'Add 3-5 relevant internal links per page',
+          'Use descriptive anchor text with keywords',
+          'Link to related content and important pages',
+          'Create a logical site hierarchy'
+        ],
+        timeEstimate: '1 hour',
+        expectedImpact: 'Better page authority distribution and user engagement'
+      });
+    }
+
+    return recommendations;
+  }
+
+  generatePerformanceRecommendations(analysis) {
+    const recommendations = [];
+    const { categories, priorities } = this.recommendationEngine;
+
+    if (analysis.technicalAnalysis.pageSpeed) {
+      const pageSpeed = analysis.technicalAnalysis.pageSpeed;
+      
+      if (pageSpeed.score < 70) {
+        recommendations.push({
+          category: categories.PERFORMANCE,
+          title: 'Improve Page Speed',
+          priority: priorities.HIGH.level,
+          impact: priorities.HIGH.impact,
+          description: `Page speed score is ${pageSpeed.score}/100. Faster pages rank better and provide better user experience.`,
+          actionItems: [
+            'Optimize and compress images (use WebP format)',
+            'Enable browser caching and compression',
+            'Minify CSS, JavaScript, and HTML',
+            'Use a Content Delivery Network (CDN)',
+            'Eliminate render-blocking resources'
+          ],
+          timeEstimate: '4-8 hours',
+          expectedImpact: 'Improved rankings, user experience, and conversion rates'
+        });
+      }
+
+      // Core Web Vitals recommendations
+      if (pageSpeed.metrics) {
+        const lcp = parseFloat(pageSpeed.metrics.largestContentfulPaint?.value);
+        if (lcp > 2.5) {
+          recommendations.push({
+            category: categories.PERFORMANCE,
+            title: 'Optimize Largest Contentful Paint (LCP)',
+            priority: priorities.HIGH.level,
+            impact: priorities.HIGH.impact,
+            description: `LCP is ${lcp}s (should be under 2.5s). This affects Core Web Vitals scoring.`,
+            actionItems: [
+              'Optimize server response times',
+              'Implement efficient image loading',
+              'Preload important resources',
+              'Remove unnecessary third-party scripts'
+            ],
+            timeEstimate: '3-6 hours',
+            expectedImpact: 'Better Core Web Vitals and search rankings'
+          });
+        }
+      }
+    }
+
+    return recommendations;
+  }
+
+  generateMobileRecommendations(analysis, $) {
+    const recommendations = [];
+    const { categories, priorities } = this.recommendationEngine;
+
+    // Viewport meta tag check
+    const viewport = $('meta[name="viewport"]');
+    if (viewport.length === 0) {
+      recommendations.push({
+        category: categories.MOBILE,
+        title: 'Add Viewport Meta Tag',
+        priority: priorities.CRITICAL.level,
+        impact: priorities.CRITICAL.impact,
+        description: 'Missing viewport meta tag. This is essential for mobile responsiveness.',
+        actionItems: [
+          'Add <meta name="viewport" content="width=device-width, initial-scale=1">',
+          'Test mobile responsiveness across devices',
+          'Ensure touch targets are at least 44px',
+          'Use readable font sizes (16px minimum)'
+        ],
+        timeEstimate: '1-2 hours',
+        expectedImpact: 'Proper mobile display and better mobile search rankings'
+      });
+    }
+
+    // Font size check
+    const smallFonts = $('*').filter(function() {
+      const fontSize = $(this).css('font-size');
+      return fontSize && parseFloat(fontSize) < 16;
+    }).length;
+
+    if (smallFonts > 0) {
+      recommendations.push({
+        category: categories.MOBILE,
+        title: 'Improve Mobile Font Sizes',
+        priority: priorities.MEDIUM.level,
+        impact: priorities.MEDIUM.impact,
+        description: 'Some text appears to be too small for mobile devices.',
+        actionItems: [
+          'Use minimum 16px font size for body text',
+          'Ensure good contrast ratios (4.5:1 minimum)',
+          'Test readability on mobile devices',
+          'Use responsive typography'
+        ],
+        timeEstimate: '2-3 hours',
+        expectedImpact: 'Better mobile user experience and accessibility'
+      });
+    }
+
+    return recommendations;
+  }
+
+  generateSecurityRecommendations(analysis, url) {
+    const recommendations = [];
+    const { categories, priorities } = this.recommendationEngine;
+
+    // HTTPS check
+    if (!url.startsWith('https://')) {
+      recommendations.push({
+        category: categories.SECURITY,
+        title: 'Implement HTTPS',
+        priority: priorities.CRITICAL.level,
+        impact: priorities.CRITICAL.impact,
+        description: 'Your site is not using HTTPS. This is a confirmed ranking factor and security requirement.',
+        actionItems: [
+          'Purchase and install an SSL certificate',
+          'Set up 301 redirects from HTTP to HTTPS',
+          'Update internal links to use HTTPS',
+          'Submit new HTTPS URLs to search engines'
+        ],
+        timeEstimate: '2-4 hours',
+        expectedImpact: 'Improved security, user trust, and search rankings'
+      });
+    }
+
+    // Security headers check (basic)
+    if (analysis.technicalAnalysis.ssl && !analysis.technicalAnalysis.ssl.secure) {
+      recommendations.push({
+        category: categories.SECURITY,
+        title: 'Improve Security Headers',
+        priority: priorities.MEDIUM.level,
+        impact: priorities.MEDIUM.impact,
+        description: 'Add security headers to protect against common web vulnerabilities.',
+        actionItems: [
+          'Implement Content Security Policy (CSP)',
+          'Add X-Frame-Options header',
+          'Set X-Content-Type-Options to nosniff',
+          'Add Strict-Transport-Security header'
+        ],
+        timeEstimate: '1-3 hours',
+        expectedImpact: 'Enhanced security and potential SEO benefits'
+      });
+    }
+
+    return recommendations;
+  }
+
+  calculateSEOScore(analysis) {
+    let score = 100;
+    const deductions = {
+      critical: 25,
+      high: 15,
+      medium: 8,
+      low: 3
+    };
+
+    // Count recommendations by priority
+    const priorityCounts = {
+      critical: 0,
+      high: 0, 
+      medium: 0,
+      low: 0
+    };
+
+    if (analysis.recommendations) {
+      analysis.recommendations.forEach(rec => {
+        priorityCounts[rec.priority]++;
+      });
+    }
+
+    // Apply deductions
+    Object.keys(priorityCounts).forEach(priority => {
+      score -= priorityCounts[priority] * deductions[priority];
+    });
+
+    // Ensure score doesn't go below 0
+    return Math.max(0, Math.min(100, score));
   }
 }
 
