@@ -11,7 +11,6 @@ import {
   CheckCircleIcon,
   DocumentTextIcon,
   TableCellsIcon,
-  PresentationChartBarIcon,
   CodeBracketIcon,
   ShareIcon,
   CalendarIcon
@@ -165,41 +164,8 @@ const handleEmailReport = async (e) => {
     setMessage('Error sending email report');
   } finally {
     setLoading(false);
-  }  };
-
-  const handleExportPowerPoint = async () => {
-    try {
-      setLoading('ppt');
-      const token = authService.getToken();
-      const response = await axios.post(
-        'http://localhost:5000/api/export/powerpoint',
-        { analysisData },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: 'blob'
-        }
-      );
-
-      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = 'seo-analysis-presentation.pptx';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
-
-      setMessageType('success');
-      setMessage('PowerPoint presentation downloaded successfully');
-    } catch (error) {
-      console.error('PowerPoint Export Error:', error);
-      setMessageType('error');
-      setMessage('Error exporting PowerPoint presentation');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }
+};
 
   const handleExportJSON = async () => {
     try {
@@ -251,7 +217,7 @@ return (
     
     <div className="space-y-6">
       {/* Professional Export Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* PDF Export */}
         <motion.button
           onClick={handleExportPDF}
@@ -294,27 +260,6 @@ return (
           </div>
         </motion.button>
 
-        {/* PowerPoint Export */}
-        <motion.button
-          onClick={handleExportPowerPoint}
-          disabled={loading}
-          className="export-card group"
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <div className="export-card-content">
-            <PresentationChartBarIcon className="w-8 h-8 text-orange-500 group-hover:text-orange-600 transition-colors" />
-            <h3 className="font-semibold text-gray-800 mt-2">Presentation</h3>
-            <p className="text-sm text-gray-600">Executive summary slides</p>
-            <div className="export-badge">
-              {loading === 'ppt' ? 'Generating...' : 'Download'}
-            </div>
-          </div>
-        </motion.button>
-
         {/* JSON Export */}
         <motion.button
           onClick={handleExportJSON}
@@ -324,7 +269,7 @@ return (
           whileTap={{ scale: 0.98 }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.3 }}
         >
           <div className="export-card-content">
             <CodeBracketIcon className="w-8 h-8 text-blue-500 group-hover:text-blue-600 transition-colors" />

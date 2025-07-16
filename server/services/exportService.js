@@ -1,7 +1,6 @@
 const PDFDocument = require('pdfkit');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const nodemailer = require('nodemailer');
-const officegen = require('officegen');
 const ExcelJS = require('exceljs');
 const path = require('path');
 const fs = require('fs');
@@ -96,124 +95,6 @@ class ExportService {
         };
 
         return await transporter.sendMail(mailOptions);
-    }
-
-    async generatePowerPoint(analysisData) {
-        return new Promise((resolve, reject) => {
-            try {
-                if (!analysisData || !analysisData.score) {
-                    throw new Error('Invalid analysis data');
-                }
-
-                const pptx = officegen('pptx');
-                const fileName = `seo-analysis-${Date.now()}.pptx`;
-                const filePath = path.join(__dirname, '../../temp', fileName);
-
-                // Title Slide
-                let slide = pptx.makeNewSlide();
-                slide.name = 'SEO Analysis Report';
-                slide.addText('SEO Analysis Report', {
-                    x: 'c', y: 2,
-                    font_size: 28,
-                    bold: true,
-                    color: '4F46E5'
-                });
-                slide.addText(`Overall Score: ${analysisData.score}`, {
-                    x: 'c', y: 3.5,
-                    font_size: 20,
-                    color: '1F2937'
-                });
-
-                // Overview Slide
-                slide = pptx.makeNewSlide();
-                slide.name = 'Analysis Overview';
-                slide.addText('Analysis Overview', {
-                    x: 1, y: 1,
-                    font_size: 24,
-                    bold: true,
-                    color: '4F46E5'
-                });
-
-                let yPos = 2;
-                if (analysisData.analysis?.meta) {
-                    slide.addText('Meta Information:', {
-                        x: 1, y: yPos,
-                        font_size: 16,
-                        bold: true
-                    });
-                    yPos += 0.5;
-                    slide.addText(`• Title: ${analysisData.analysis.meta.title || 'N/A'}`, {
-                        x: 1.5, y: yPos,
-                        font_size: 14
-                    });
-                    yPos += 0.4;
-                    slide.addText(`• Description: ${analysisData.analysis.meta.description || 'Not provided'}`, {
-                        x: 1.5, y: yPos,
-                        font_size: 14
-                    });
-                    yPos += 0.6;
-                }
-
-                if (analysisData.analysis?.content) {
-                    slide.addText('Content Analysis:', {
-                        x: 1, y: yPos,
-                        font_size: 16,
-                        bold: true
-                    });
-                    yPos += 0.5;
-                    slide.addText(`• Word Count: ${analysisData.analysis.content.wordCount || 0}`, {
-                        x: 1.5, y: yPos,
-                        font_size: 14
-                    });
-                    yPos += 0.4;
-                    if (analysisData.analysis.content.headings) {
-                        slide.addText(`• Headings: H1(${analysisData.analysis.content.headings.h1 || 0}) H2(${analysisData.analysis.content.headings.h2 || 0}) H3(${analysisData.analysis.content.headings.h3 || 0})`, {
-                            x: 1.5, y: yPos,
-                            font_size: 14
-                        });
-                    }
-                }
-
-                // Recommendations Slide
-                if (analysisData.recommendations && analysisData.recommendations.length > 0) {
-                    slide = pptx.makeNewSlide();
-                    slide.name = 'Recommendations';
-                    slide.addText('Key Recommendations', {
-                        x: 1, y: 1,
-                        font_size: 24,
-                        bold: true,
-                        color: '4F46E5'
-                    });
-
-                    yPos = 2;
-                    analysisData.recommendations.slice(0, 6).forEach((rec, index) => {
-                        const priorityColor = rec.priority === 'high' ? 'DC2626' : 
-                                            rec.priority === 'medium' ? 'CA8A04' : '2563EB';
-                        
-                        slide.addText(`${index + 1}. ${rec.description || rec.title || 'Recommendation'}`, {
-                            x: 1, y: yPos,
-                            font_size: 14,
-                            color: priorityColor
-                        });
-                        yPos += 0.5;
-                    });
-                }
-
-                const out = fs.createWriteStream(filePath);
-                pptx.generate(out);
-
-                out.on('close', () => {
-                    resolve(filePath);
-                });
-
-                out.on('error', (err) => {
-                    reject(err);
-                });
-
-            } catch (error) {
-                reject(error);
-            }
-        });
     }
 
     async generateExcel(analysisData) {

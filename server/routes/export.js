@@ -46,31 +46,6 @@ router.post('/csv', authMiddleware, async (req, res) => {
     }
 });
 
-// PowerPoint Export
-router.post('/powerpoint', authMiddleware, async (req, res) => {
-    try {
-        console.log('Received data:', req.body);
-        if (!req.body.analysisData) {
-            return res.status(400).json({ message: 'Analysis data is required' });
-        }
-
-        const filePath = await exportService.generatePowerPoint(req.body.analysisData);
-        res.download(filePath, 'seo-analysis-presentation.pptx', (err) => {
-            if (err) {
-                console.error('PowerPoint download error:', err);
-                return res.status(500).json({ message: 'Error downloading PowerPoint' });
-            }
-            // Clean up the file after download
-            fs.unlink(filePath, (unlinkErr) => {
-                if (unlinkErr) console.error('Error deleting temporary file:', unlinkErr);
-            });
-        });
-    } catch (error) {
-        console.error('PowerPoint generation error:', error);
-        res.status(500).json({ message: 'Error generating PowerPoint presentation' });
-    }
-});
-
 // Excel Export
 router.post('/excel', authMiddleware, async (req, res) => {
     try {
