@@ -1,5 +1,6 @@
 const SeoAnalysis = require('../models/SeoAnalysis');
 const seoAnalyzer = require('../services/seoAnalyzer');
+const aiAnalysisService = require('../services/aiAnalysisService');
 
 
 const seoController = {
@@ -7,6 +8,7 @@ const seoController = {
     try {
       const { url } = req.body;
       const userId = req.userId;
+      const ipAddress = req.ip || req.connection.remoteAddress;
 
       if (!url) {
         return res.status(400).json({
@@ -34,7 +36,7 @@ const seoController = {
       const analysisData = {
         userId,
         url,
-        domain, // Add domain field
+        domain,
         score,
         analysis: {
           meta: {
@@ -99,20 +101,44 @@ const seoController = {
         createdAt: new Date()
       };
 
-      // Save analysis to database
+      // Save the basic SEO analysis
       const seoAnalysis = new SeoAnalysis(analysisData);
       await seoAnalysis.save();
 
-      // Send response with usage information
-      res.json({
-        success: true,
-        data: {
+      // Generate AI insights
+      const aiResult = await aiAnalysisService.generateInsights(
+        {
+          url,
           score,
           analysis: analysisData.analysis,
           recommendations: generateRecommendations(analysisResults)
         },
-        usage: req.usageInfo // Added from rate limiter middleware
-      });
+        userId,
+        ipAddress
+      );
+
+      // Prepare response with AI insights and usage info
+      const response = {
+        success: true,
+        data: {
+          score,
+          analysis: analysisData.analysis,
+          recommendations: generateRecommendations(analysisResults),
+          aiInsights: aiResult.success ? aiResult.insights : null,
+          aiAvailability: aiResult.availability
+        },
+        usage: req.usageInfo,
+        aiUsage: {
+          available: aiResult.success || aiResult.availability?.available,
+          cached: aiResult.cached,
+          error: aiResult.error,
+          remainingRequests: aiResult.availability?.remainingRequests || 0,
+          requestCount: aiResult.availability?.requestCount || 0,
+          resetTime: aiResult.availability?.resetTime
+        }
+      };
+
+      res.json(response);
 
     } catch (error) {
       console.error('SEO Analysis error:', error);
@@ -121,6 +147,88 @@ const seoController = {
         message: 'Error analyzing website',
         error: error.message 
       })
+    }
+  },
+
+  // New endpoint to check AI availability
+  async checkAIAvailability(req, res) {
+    try {
+      const userId = req.userId;
+      const ipAddress = req.ip || req.connection.remoteAddress;
+
+      const availability = await aiAnalysisService.checkAvailability(userId, ipAddress);
+      
+      res.json({
+        success: true,
+        availability
+      });
+    } catch (error) {
+      console.error('AI availability check error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error checking AI availability'
+      });
+    }
+  },
+
+  // New endpoint to get usage statistics for admin
+  async getAIUsageStats(req, res) {
+    try {
+      const stats = await aiAnalysisService.getUsageStats();
+      
+      res.json({
+        success: true,
+        stats
+      });
+    } catch (error) {
+      console.error('AI usage stats error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error retrieving usage statistics'
+      });
+    }
+  },
+
+  // New endpoint to get rate limit status for debugging
+  async getRateLimitStatus(req, res) {
+    try {
+      const userId = req.userId;
+      const ipAddress = req.ip || req.connection.remoteAddress;
+
+      const status = await aiAnalysisService.getRateLimitStatus(userId, ipAddress);
+      
+      res.json({
+        success: true,
+        status
+      });
+    } catch (error) {
+      console.error('Rate limit status error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error checking rate limit status'
+      });
+    }
+  },
+
+  // New endpoint to reset rate limits (for testing)
+  async resetRateLimits(req, res) {
+    try {
+      const userId = req.userId;
+      const ipAddress = req.ip || req.connection.remoteAddress;
+
+      const resetCount = await aiAnalysisService.resetRateLimits(userId, ipAddress);
+      
+      res.json({
+        success: true,
+        message: `Reset ${resetCount} rate limit records`,
+        resetCount
+      });
+    } catch (error) {
+      console.error('Rate limit reset error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error resetting rate limits'
+      });
     }
   },
 

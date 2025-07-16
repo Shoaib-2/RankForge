@@ -15,4 +15,12 @@ router.post('/analyze',
 
 router.get('/history', authMiddleware, seoAnalysisLimiterStatusOnly, seoController.getAnalysisHistory);
 
+// AI Analysis routes
+router.get('/ai/availability', authMiddleware, seoController.checkAIAvailability);
+router.get('/ai/usage-stats', authMiddleware, seoController.getAIUsageStats);
+
+// Debug routes for rate limiting
+router.get('/ai/rate-limit-status', authMiddleware, seoController.getRateLimitStatus);
+router.post('/ai/reset-rate-limits', authMiddleware, seoController.resetRateLimits);
+
 module.exports = router;

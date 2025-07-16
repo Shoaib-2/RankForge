@@ -4,6 +4,8 @@ import axios from 'axios';
 import authService from '../../../services/authService';
 import PageSpeedInsights from './PageSpeedInsights';
 import ExportOptions from '../export/ExportOptions';
+import AIInsights from './AIInsights';
+import AIUsageTracker from './AIUsageTracker';
 import  { useSEO }  from '../../../context/SeoContext';
 import { 
   MagnifyingGlassIcon, 
@@ -41,8 +43,6 @@ const SEOAnalysis = () => {
     setRateLimitExhausted
   } = useSEO();
 
-
-
   const handleAnalysis = async (e) => {
     e.preventDefault();
     
@@ -69,6 +69,8 @@ const SEOAnalysis = () => {
       updateRateLimitFromHeaders(response.headers);
 
       const analysisData = response.data.data;
+      const aiUsage = response.data.aiUsage;
+      
       setResults({
         score: analysisData.score,
         analysis: analysisData.analysis,
@@ -77,7 +79,10 @@ const SEOAnalysis = () => {
           type: rec.category,
           description: rec.message,
           priority: rec.priority
-        }))
+        })),
+        // Add AI insights and usage info
+        aiInsights: analysisData.aiInsights,
+        aiUsage: aiUsage
       });
     } catch (error) {
       console.error('Analysis error:', error);
@@ -89,10 +94,21 @@ const SEOAnalysis = () => {
       } else {
         setError('Using demo SEO analysis - API unavailable');
       }
-      // Set mock SEO analysis results
+      // Set mock SEO analysis results with AI insights placeholder
       setResults({
         score: 78,
         analysis: {
+          meta: {
+            title: 'Demo Website - SEO Analysis',
+            description: 'This is a demo meta description for testing purposes',
+            keywords: 'demo, seo, analysis, test'
+          },
+          content: {
+            wordCount: 450,
+            headings: { h1: 1, h2: 3, h3: 5 },
+            images: { total: 8, withAlt: 6, withoutAlt: 2 },
+            paragraphs: 12
+          },
           technicalAnalysis: {
             pageSpeed: {
               score: 85,
@@ -109,6 +125,10 @@ const SEOAnalysis = () => {
                 { priority: 'medium', message: 'Minify CSS and JavaScript files' },
                 { priority: 'low', message: 'Enable browser caching' }
               ]
+            },
+            mobileResponsiveness: {
+              isMobileFriendly: true,
+              issues: []
             }
           }
         },
@@ -137,7 +157,43 @@ const SEOAnalysis = () => {
             description: 'Improve internal link structure',
             priority: 'low'
           }
-        ]
+        ],
+        // Mock AI insights
+        aiInsights: {
+          executiveSummary: "This demo website shows good fundamental SEO structure but has opportunities for improvement in technical optimization and content strategy.",
+          priorityActions: [
+            {
+              action: "Optimize missing meta descriptions",
+              impact: "High",
+              timeframe: "1-2 hours", 
+              reasoning: "Meta descriptions directly impact click-through rates from search results"
+            },
+            {
+              action: "Add alt text to images",
+              impact: "Medium",
+              timeframe: "2-3 hours",
+              reasoning: "Improves accessibility and helps search engines understand image content"
+            }
+          ],
+          competitiveAdvantage: "Implementing these changes will improve search visibility and user experience compared to competitors.",
+          expectedOutcomes: {
+            shortTerm: "Improved click-through rates and accessibility scores within 2-4 weeks",
+            longTerm: "Better search rankings and increased organic traffic over 3-6 months"
+          },
+          industryInsights: "Focus on Core Web Vitals and mobile-first optimization for 2024 SEO success.",
+          riskAssessment: "Low",
+          confidence: 0.85
+        },
+        // Mock AI usage
+        aiUsage: {
+          available: false,
+          remainingRequests: 0,
+          requestCount: 10,
+          resetTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          reason: "Demo mode - AI analysis unavailable",
+          cached: false,
+          error: "Demo mode active - upgrade to access AI insights"
+        }
       });
     } finally {
       setLoading(false);
@@ -483,17 +539,41 @@ const SEOAnalysis = () => {
             </motion.div>
           )}
 
+          {/* AI Usage Tracker - Show at top */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.45 }}
+          >
+            <AIUsageTracker aiUsage={results.aiUsage} />
+          </motion.div>
+
+          {/* AI Insights Section */}
+          {results.aiInsights && (
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <AIInsights 
+                insights={results.aiInsights} 
+                availability={results.aiUsage} 
+              />
+            </motion.div>
+          )}
+
           {/* Export Options */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
           >
             <ExportOptions 
               analysisData={{
                 score: results.score,
                 analysis: results.analysis,
-                recommendations: results.recommendations
+                recommendations: results.recommendations,
+                aiInsights: results.aiInsights
               }} 
             />
           </motion.div>
