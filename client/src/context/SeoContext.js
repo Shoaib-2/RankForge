@@ -32,20 +32,21 @@ export const SEOProvider = ({ children }) => {
         return;
       }
       
-      // Make a lightweight request to get rate limit headers
-      // Use a fresh axios instance to avoid triggering interceptors
+      // Use the new AI availability endpoint for accurate rate limit status
       const response = await axios.create().get(
-        'http://localhost:5000/api/seo/history',
+        'http://localhost:5000/api/seo/ai/availability',
         {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 5000 // 5 second timeout
         }
       );
       
-      const remaining = parseInt(response.headers['x-ratelimit-remaining'] || '10');
-      const limit = parseInt(response.headers['x-ratelimit-limit'] || '10');
-      setDailyLimit(limit);
-      setAttemptCount(limit - remaining);
+      const availability = response.data.availability;
+      const remainingRequests = availability.remainingRequests || 0;
+      const dailyLimit = 10;
+      
+      setDailyLimit(dailyLimit);
+      setAttemptCount(dailyLimit - remainingRequests);
     } catch (error) {
       // If API call fails (auth, network, etc.), assume fresh user with full quota
       // Don't trigger auth refresh loops
@@ -70,9 +71,22 @@ export const SEOProvider = ({ children }) => {
     setAttemptCount(limit - remaining);
   };
 
+  const updateRateLimitFromResponse = (responseData) => {
+    // Update from AI usage data in response
+    if (responseData.aiUsage) {
+      const used = responseData.aiUsage.requestCount || 0;
+      setDailyLimit(10);
+      setAttemptCount(used);
+    }
+  };
+
   const setRateLimitExhausted = () => {
     setAttemptCount(10);
     setDailyLimit(10);
+  };
+
+  const refreshRateLimit = async () => {
+    await fetchRateLimitStatus();
   };
 
   const clearAnalysis = () => {
@@ -97,7 +111,9 @@ export const SEOProvider = ({ children }) => {
     rateLimitLoading,
     fetchRateLimitStatus,
     updateRateLimitFromHeaders,
-    setRateLimitExhausted
+    updateRateLimitFromResponse,
+    setRateLimitExhausted,
+    refreshRateLimit
   };
 
   return (

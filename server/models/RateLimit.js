@@ -24,9 +24,14 @@ const rateLimitSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: () => {
+      // Always use UTC midnight for consistent daily resets
+      const now = new Date();
+      const utcMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      return utcMidnight;
+    },
     index: true,
-    expires: 86400 // Auto-delete after 24 hours
+    expires: 86400 // Auto-delete after 24 hours (from UTC midnight)
   },
   service: {
     type: String,

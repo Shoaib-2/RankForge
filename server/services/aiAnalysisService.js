@@ -124,16 +124,22 @@ class AIAnalysisService {
         };
       }
 
-      // Increment usage counter
+      // Increment usage counter (even if AI fails, we track the attempt)
       await this.incrementUsage(userId, ipAddress);
 
       // Generate AI insights
       const insights = await this.callGeminiAPI(analysisData);
 
-      // Cache the insights for 24 hours (extended to reduce API calls)
-      cacheService.set(cacheKey, insights, 24 * 60 * 60);
+      // Check if we got fallback insights due to API failure
+      if (insights.fallbackGenerated) {
+        logger.info('Using fallback insights due to AI service unavailability');
+      }
 
-      // Store insights in database
+      // Cache the insights for 6 hours (reduced for fallback, 24 hours for real AI)
+      const cacheTime = insights.fallbackGenerated ? 6 * 60 * 60 : 24 * 60 * 60;
+      cacheService.set(cacheKey, insights, cacheTime);
+
+      // Store insights in database (even fallback ones for consistency)
       await this.storeInsights(analysisData.url, insights, userId);
 
       // Get updated availability
@@ -143,6 +149,7 @@ class AIAnalysisService {
         success: true,
         insights,
         cached: false,
+        fallback: insights.fallbackGenerated || false,
         availability: updatedAvailability
       };
 
@@ -174,7 +181,7 @@ class AIAnalysisService {
         const result = await this.model.generateContent({
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           generationConfig: {
-            maxOutputTokens: 300, // Reduced from 500 for efficiency
+            maxOutputTokens: 400, // Increased slightly to prevent JSON truncation
             temperature: 0.7,
           },
         });
@@ -195,26 +202,27 @@ class AIAnalysisService {
       } catch (error) {
         lastError = error;
         
-        // Handle quota exceeded errors
+        // Handle specific API errors
         if (error.status === 429) {
           logger.warn(`Gemini API quota exceeded (attempt ${attempt}/${maxRetries})`);
-          
-          if (attempt < maxRetries) {
-            // Wait before retry (shorter wait time)
-            const waitTime = 3000; // Fixed 3s wait instead of exponential backoff
-            logger.info(`Retrying in ${waitTime/1000}s...`);
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-            continue;
-          } else {
-            // Return fallback insights after all retries failed
-            logger.warn('All Gemini API retries failed, returning fallback insights');
-            return this.generateFallbackInsights(analysisData);
-          }
+        } else if (error.status === 503) {
+          logger.warn(`Gemini API service overloaded (attempt ${attempt}/${maxRetries}): ${error.message}`);
+        } else {
+          logger.error(`Gemini API call error (attempt ${attempt}):`, error.message);
         }
         
-        // For other errors, log and continue to fallback
-        logger.error(`Gemini API call error (attempt ${attempt}):`, error.message);
+        // For 503 (Service Unavailable) or 429 (Quota), retry with backoff
+        if ((error.status === 429 || error.status === 503) && attempt < maxRetries) {
+          // Wait before retry with exponential backoff
+          const waitTime = error.status === 503 ? 5000 : 3000; // Longer wait for service overload
+          logger.info(`Retrying in ${waitTime/1000}s...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          continue;
+        }
+        
+        // If all retries failed or other error, return fallback
         if (attempt === maxRetries) {
+          logger.warn('All Gemini API retries failed, returning fallback insights');
           return this.generateFallbackInsights(analysisData);
         }
       }
@@ -311,15 +319,16 @@ Be concise.`;
    * Get or create rate limit record for user/IP
    */
   async getUserRateLimit(userId, ipAddress) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Use UTC midnight for consistent daily boundaries
+    const todayUTC = new Date();
+    todayUTC.setUTCHours(0, 0, 0, 0);
 
     // Check user-based limit first
     let userRateLimit = null;
     if (userId) {
       userRateLimit = await RateLimit.findOne({
         userId: userId,
-        createdAt: { $gte: today },
+        createdAt: { $gte: todayUTC },
         service: 'ai_analysis'
       });
     }
@@ -327,7 +336,7 @@ Be concise.`;
     // Check IP-based limit
     let ipRateLimit = await RateLimit.findOne({
       ipAddress: ipAddress,
-      createdAt: { $gte: today },
+      createdAt: { $gte: todayUTC },
       service: 'ai_analysis'
     });
 
@@ -345,7 +354,7 @@ Be concise.`;
       ipAddress,
       requestCount: 0,
       service: 'ai_analysis',
-      createdAt: new Date()
+      createdAt: todayUTC // Use UTC midnight
     });
     await newRateLimit.save();
     
@@ -356,15 +365,16 @@ Be concise.`;
    * Increment usage counter
    */
   async incrementUsage(userId, ipAddress) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Use UTC midnight for consistent daily boundaries
+    const todayUTC = new Date();
+    todayUTC.setUTCHours(0, 0, 0, 0);
 
     // Update or create user-based rate limit
     if (userId) {
       await RateLimit.findOneAndUpdate(
         {
           userId: userId,
-          createdAt: { $gte: today },
+          createdAt: { $gte: todayUTC },
           service: 'ai_analysis'
         },
         { 
@@ -374,7 +384,7 @@ Be concise.`;
             ipAddress: ipAddress
           }
         },
-        { upsert: true }
+        { upsert: true, setDefaultsOnInsert: true }
       );
     }
 
@@ -383,7 +393,7 @@ Be concise.`;
       {
         ipAddress: ipAddress,
         userId: { $exists: false }, // Ensure this is IP-only record
-        createdAt: { $gte: today },
+        createdAt: { $gte: todayUTC },
         service: 'ai_analysis'
       },
       { 
@@ -392,7 +402,7 @@ Be concise.`;
           lastRequestAt: new Date()
         }
       },
-      { upsert: true }
+      { upsert: true, setDefaultsOnInsert: true }
     );
   }
 
@@ -400,11 +410,12 @@ Be concise.`;
    * Get global usage for the day
    */
   async getGlobalUsage() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Use UTC midnight for consistent daily boundaries
+    const todayUTC = new Date();
+    todayUTC.setUTCHours(0, 0, 0, 0);
 
     const result = await RateLimit.aggregate([
-      { $match: { createdAt: { $gte: today } } },
+      { $match: { createdAt: { $gte: todayUTC } } },
       { $group: { _id: null, totalRequests: { $sum: '$requestCount' } } }
     ]);
 
@@ -455,12 +466,13 @@ Be concise.`;
    * Get usage statistics for admin dashboard
    */
   async getUsageStats() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Use UTC midnight for consistent daily boundaries
+    const todayUTC = new Date();
+    todayUTC.setUTCHours(0, 0, 0, 0);
 
     const [dailyStats, totalStats] = await Promise.all([
       RateLimit.aggregate([
-        { $match: { createdAt: { $gte: today } } },
+        { $match: { createdAt: { $gte: todayUTC } } },
         { 
           $group: { 
             _id: null, 
@@ -470,7 +482,7 @@ Be concise.`;
           } 
         }
       ]),
-      AiInsight.countDocuments({ createdAt: { $gte: today } })
+      AiInsight.countDocuments({ createdAt: { $gte: todayUTC } })
     ]);
 
     return {
@@ -510,11 +522,12 @@ Be concise.`;
    * Reset rate limits for testing (admin function)
    */
   async resetRateLimits(userId = null, ipAddress = null) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Use UTC midnight for consistent daily boundaries
+    const todayUTC = new Date();
+    todayUTC.setUTCHours(0, 0, 0, 0);
 
     const query = {
-      createdAt: { $gte: today },
+      createdAt: { $gte: todayUTC },
       service: 'ai_analysis'
     };
 
@@ -531,18 +544,19 @@ Be concise.`;
    * Get detailed rate limit status for debugging
    */
   async getRateLimitStatus(userId, ipAddress) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Use UTC midnight for consistent daily boundaries
+    const todayUTC = new Date();
+    todayUTC.setUTCHours(0, 0, 0, 0);
 
     const userLimit = userId ? await RateLimit.findOne({
       userId: userId,
-      createdAt: { $gte: today },
+      createdAt: { $gte: todayUTC },
       service: 'ai_analysis'
     }) : null;
 
     const ipLimit = await RateLimit.findOne({
       ipAddress: ipAddress,
-      createdAt: { $gte: today },
+      createdAt: { $gte: todayUTC },
       service: 'ai_analysis'
     });
 
@@ -559,7 +573,10 @@ Be concise.`;
       },
       serviceEnabled: this.isEnabled,
       globalLimit: this.GLOBAL_DAILY_LIMIT,
-      dailyLimit: this.DAILY_LIMIT
+      dailyLimit: this.DAILY_LIMIT,
+      currentTimeUTC: new Date().toISOString(),
+      todayBoundaryUTC: todayUTC.toISOString(),
+      nextResetUTC: this.getNextResetTime()
     };
   }
 

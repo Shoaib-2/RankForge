@@ -2,20 +2,20 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { useSEO } from '../../../context/SeoContext';
-import authService from '../../../services/authService';
+import { authService } from '../../../services/authService';
 import AIInsights from './AIInsights';
 import AIUsageTracker from './AIUsageTracker';
-import ExportOptions from '../export/ExportOptions';
 import { 
+  CheckCircleIcon, 
   ExclamationTriangleIcon, 
+  XCircleIcon,
   ArrowPathIcon,
   SparklesIcon,
   LightBulbIcon, 
   FireIcon,
   BoltIcon,
-  ClockIcon,
-  ChartBarIcon,
-  CheckCircleIcon
+  ShieldCheckIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline';
 
 const SEOAnalysis = () => {
@@ -142,21 +142,27 @@ const SEOAnalysis = () => {
   };
 
   const getScoreColor = (score) => {
-    if (score >= 80) return 'score-excellent';
-    if (score >= 60) return 'score-good';
-    return 'score-poor';
+    if (score >= 80) return 'text-green-400';
+    if (score >= 60) return 'text-yellow-400';
+    return 'text-red-400';
+  };
+
+  const getScoreIcon = (score) => {
+    if (score >= 80) return CheckCircleIcon;
+    if (score >= 60) return ExclamationTriangleIcon;
+    return XCircleIcon;
   };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high':
-        return 'text-red-600 bg-red-50 border-red-200';
+        return 'text-red-400 bg-red-900/20 border-red-500/30';
       case 'medium':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+        return 'text-yellow-400 bg-yellow-900/20 border-yellow-500/30';
       case 'low':
-        return 'text-green-600 bg-green-50 border-green-200';
+        return 'text-green-400 bg-green-900/20 border-green-500/30';
       default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return 'text-gray-400 bg-gray-900/20 border-gray-500/30';
     }
   };
 
@@ -174,7 +180,7 @@ const SEOAnalysis = () => {
   };
 
   return (
-    <div className="dashboard-container">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -182,10 +188,10 @@ const SEOAnalysis = () => {
       >
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
             SEO Analysis Tool
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-300 text-lg">
             Analyze your website's SEO performance and get AI-powered insights
           </p>
         </div>
@@ -197,7 +203,7 @@ const SEOAnalysis = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="seo-analysis-section"
+          className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 mb-8"
         >
           <form onSubmit={handleAnalysis} className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
@@ -206,7 +212,7 @@ const SEOAnalysis = () => {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="Enter website URL (e.g., https://example.com)"
-                className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
                 disabled={loading}
               />
@@ -215,7 +221,7 @@ const SEOAnalysis = () => {
               <button
                 type="submit"
                 disabled={loading || !url.trim()}
-                className="export-button"
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading ? (
                   <>
@@ -233,8 +239,7 @@ const SEOAnalysis = () => {
                 <button
                   type="button"
                   onClick={clearAnalysis}
-                  className="export-button"
-                  style={{ background: 'linear-gradient(135deg, #6b7280, #4b5563)' }}
+                  className="px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
                 >
                   Clear
                 </button>
@@ -248,11 +253,11 @@ const SEOAnalysis = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="alert alert-error"
+            className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6"
           >
             <div className="flex items-center gap-2">
-              <ExclamationTriangleIcon className="w-5 h-5" />
-              <p>{error}</p>
+              <ExclamationTriangleIcon className="w-5 h-5 text-red-400" />
+              <p className="text-red-200">{error}</p>
             </div>
           </motion.div>
         )}
@@ -265,19 +270,16 @@ const SEOAnalysis = () => {
             className="space-y-6"
           >
             {/* SEO Score */}
-            <div className="seo-analysis-section">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-                  <ChartBarIcon className="w-6 h-6 mr-2" />
-                  SEO Score
-                </h2>
+                <h2 className="text-2xl font-bold text-white">SEO Score</h2>
                 {results.score && (
                   <div className="flex items-center gap-2">
-                    <div className={`score-badge ${getScoreColor(results.score).replace('text-', 'score-').replace('-600', '')}`}>
-                      {results.score}
-                    </div>
-                    <span className="text-lg font-bold text-gray-800">
-                      / 100
+                    {React.createElement(getScoreIcon(results.score), {
+                      className: `w-8 h-8 ${getScoreColor(results.score)}`
+                    })}
+                    <span className={`text-3xl font-bold ${getScoreColor(results.score)}`}>
+                      {results.score}/100
                     </span>
                   </div>
                 )}
@@ -286,18 +288,18 @@ const SEOAnalysis = () => {
 
             {/* Recommendations */}
             {results.recommendations && results.recommendations.length > 0 && (
-              <div className="seo-analysis-section">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                  <LightBulbIcon className="w-6 h-6 mr-2" />
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <LightBulbIcon className="w-6 h-6 text-yellow-400" />
                   Recommendations
                 </h3>
-                <div className="analysis-results">
+                <div className="space-y-3">
                   {results.recommendations.map((rec) => {
                     const IconComponent = getPriorityIcon(rec.priority);
                     return (
                       <div
                         key={rec.id}
-                        className="analysis-item"
+                        className={`p-4 rounded-lg border ${getPriorityColor(rec.priority)}`}
                       >
                         <div className="flex items-start gap-3">
                           <IconComponent className="w-5 h-5 mt-0.5 flex-shrink-0" />
@@ -308,7 +310,7 @@ const SEOAnalysis = () => {
                                 {rec.priority}
                               </span>
                             </div>
-                            <p className="text-gray-700">{rec.description}</p>
+                            <p className="text-gray-300">{rec.description}</p>
                           </div>
                         </div>
                       </div>
@@ -319,18 +321,17 @@ const SEOAnalysis = () => {
             )}
 
             {/* AI Insights Section */}
-            <div className="seo-analysis-section">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-gray-800 flex items-center">
-                  <SparklesIcon className="w-6 h-6 mr-2" />
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <SparklesIcon className="w-6 h-6 text-purple-400" />
                   AI-Powered Insights
                 </h3>
                 {!results.aiInsights && analysisId && (
                   <button
                     onClick={handleGetAIInsights}
                     disabled={aiInsightsLoading || (attemptCount >= dailyLimit && !rateLimitLoading)}
-                    className="export-button"
-                    style={{ background: 'linear-gradient(135deg, #8b5cf6, #ec4899)' }}
+                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {aiInsightsLoading ? (
                       <>
@@ -342,7 +343,7 @@ const SEOAnalysis = () => {
                         <BoltIcon className="w-4 h-4" />
                         Get AI Insights
                         {!rateLimitLoading && (
-                          <span className="text-xs bg-white/20 px-2 py-1 rounded ml-2">
+                          <span className="text-xs bg-white/20 px-2 py-1 rounded">
                             {dailyLimit - attemptCount} left
                           </span>
                         )}
@@ -356,26 +357,23 @@ const SEOAnalysis = () => {
                 <AIInsights insights={results.aiInsights} />
               ) : analysisId ? (
                 <div className="text-center py-8">
-                  <SparklesIcon className="w-12 h-12 text-purple-500 mx-auto mb-4" />
-                  <p className="text-gray-700 mb-4">
+                  <SparklesIcon className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+                  <p className="text-gray-300 mb-4">
                     Get AI-powered insights and recommendations for your website
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-400">
                     Click "Get AI Insights" to generate personalized recommendations
                   </p>
                 </div>
               ) : (
                 <div className="text-center py-8">
                   <ClockIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">
+                  <p className="text-gray-400">
                     Run an SEO analysis first to get AI insights
                   </p>
                 </div>
               )}
             </div>
-
-            {/* Export Options */}
-            <ExportOptions analysisData={results} />
           </motion.div>
         )}
       </motion.div>

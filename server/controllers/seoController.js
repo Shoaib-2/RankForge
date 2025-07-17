@@ -17,6 +17,19 @@ const seoController = {
         });
       }
 
+      // Check rate limit availability first
+      const availability = await aiAnalysisService.checkAvailability(userId, ipAddress);
+      
+      if (!availability.available) {
+        return res.status(429).json({
+          success: false,
+          message: availability.reason,
+          limit: 10,
+          remaining: availability.remainingRequests || 0,
+          resetTime: availability.resetTime
+        });
+      }
+
       // Get complete analysis
       const analysisResults = await seoAnalyzer.analyzeContent(url);
       
@@ -105,37 +118,22 @@ const seoController = {
       const seoAnalysis = new SeoAnalysis(analysisData);
       await seoAnalysis.save();
 
-      // Generate AI insights
-      const aiResult = await aiAnalysisService.generateInsights(
-        {
-          url,
-          score,
-          analysis: analysisData.analysis,
-          recommendations: generateRecommendations(analysisResults)
-        },
-        userId,
-        ipAddress
-      );
+      // Set basic rate limit headers (for SEO analysis tracking)
+      res.setHeader('X-RateLimit-Remaining', 10); // Basic SEO analysis doesn't count against AI limit
+      res.setHeader('X-RateLimit-Limit', 10);
 
-      // Prepare response with AI insights and usage info
+      // Prepare response WITHOUT AI insights (user can request them separately)
       const response = {
         success: true,
         data: {
           score,
           analysis: analysisData.analysis,
           recommendations: generateRecommendations(analysisResults),
-          aiInsights: aiResult.success ? aiResult.insights : null,
-          aiAvailability: aiResult.availability
+          aiInsights: null, // No AI insights by default
+          aiAvailability: null
         },
-        usage: req.usageInfo,
-        aiUsage: {
-          available: aiResult.success || aiResult.availability?.available,
-          cached: aiResult.cached,
-          error: aiResult.error,
-          remainingRequests: aiResult.availability?.remainingRequests || 0,
-          requestCount: aiResult.availability?.requestCount || 0,
-          resetTime: aiResult.availability?.resetTime
-        }
+        message: 'SEO analysis completed. Click "Get AI Insights" for strategic recommendations.',
+        analysisId: seoAnalysis._id // Include ID for AI insights request
       };
 
       res.json(response);
@@ -232,10 +230,103 @@ const seoController = {
     }
   },
 
+  // New endpoint to get AI insights for a specific analysis
+  async getAIInsights(req, res) {
+    try {
+      const { analysisId } = req.params;
+      const userId = req.userId;
+      const ipAddress = req.ip || req.connection.remoteAddress;
+
+      // Find the analysis
+      const analysis = await SeoAnalysis.findOne({ 
+        _id: analysisId, 
+        userId: userId 
+      });
+
+      if (!analysis) {
+        return res.status(404).json({
+          success: false,
+          message: 'Analysis not found'
+        });
+      }
+
+      // Check rate limit availability for AI insights
+      const availability = await aiAnalysisService.checkAvailability(userId, ipAddress);
+      
+      if (!availability.available) {
+        return res.status(429).json({
+          success: false,
+          message: availability.reason,
+          limit: 10,
+          remaining: availability.remainingRequests || 0,
+          resetTime: availability.resetTime
+        });
+      }
+
+      // Generate AI insights for the existing analysis
+      const aiResult = await aiAnalysisService.generateInsights(
+        {
+          url: analysis.url,
+          score: analysis.score,
+          analysis: analysis.analysis,
+          recommendations: generateRecommendations({
+            metaAnalysis: { recommendations: analysis.analysis.meta.recommendations },
+            contentAnalysis: { recommendations: analysis.analysis.content.recommendations },
+            technicalAnalysis: { recommendations: analysis.analysis.technical.recommendations }
+          })
+        },
+        userId,
+        ipAddress
+      );
+
+      // Set proper rate limit headers based on current usage
+      const currentAvailability = await aiAnalysisService.checkAvailability(userId, ipAddress);
+      res.setHeader('X-RateLimit-Remaining', currentAvailability.remainingRequests || 0);
+      res.setHeader('X-RateLimit-Limit', 10);
+      res.setHeader('X-RateLimit-Reset', currentAvailability.resetTime);
+
+      // Prepare response with AI insights
+      const response = {
+        success: true,
+        data: {
+          aiInsights: aiResult.success ? aiResult.insights : null,
+          analysisId: analysisId
+        },
+        aiUsage: {
+          available: aiResult.success || aiResult.availability?.available,
+          cached: aiResult.cached,
+          error: aiResult.error,
+          remainingRequests: currentAvailability.remainingRequests || 0,
+          requestCount: currentAvailability.requestCount || 0,
+          resetTime: currentAvailability.resetTime,
+          fallback: aiResult.fallback || false
+        }
+      };
+
+      res.json(response);
+
+    } catch (error) {
+      console.error('AI Insights error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Error generating AI insights',
+        error: error.message 
+      });
+    }
+  },
+
   // Keep the existing getAnalysisHistory method
   async getAnalysisHistory(req, res) {
     try {
       const userId = req.userId;
+      const ipAddress = req.ip || req.connection.remoteAddress;
+
+      // Set rate limit headers for history endpoint
+      const availability = await aiAnalysisService.checkAvailability(userId, ipAddress);
+      res.setHeader('X-RateLimit-Remaining', availability.remainingRequests || 0);
+      res.setHeader('X-RateLimit-Limit', 10);
+      res.setHeader('X-RateLimit-Reset', availability.resetTime);
+
       const history = await SeoAnalysis.find({ userId })
         .sort({ createdAt: -1 })
         .limit(10);

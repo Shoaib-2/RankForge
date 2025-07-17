@@ -4,16 +4,17 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const { generalLimiter, speedLimiter, clearOldCacheEntries } = require('./middleware/rateLimiter');
+const { generalLimiter, speedLimiter } = require('./middleware/rateLimiter');
 const { sanitizeInput } = require('./middleware/validation');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { logger, requestLogger } = require('./utils/logger');
+const RateLimitCleanup = require('./utils/rateLimitCleanup');
 require('dotenv').config();
 
 const app = express();
 
-// Clear old cache entries on server startup
-clearOldCacheEntries();
+// Start rate limit cleanup scheduler
+RateLimitCleanup.startScheduler();
 
 // CORS configuration to allow frontend to communicate with backend
 const corsOptions = {
