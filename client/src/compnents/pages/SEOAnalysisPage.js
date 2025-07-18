@@ -4,9 +4,9 @@ import { InformationCircleIcon, ExclamationTriangleIcon } from '@heroicons/react
 
 const SEOAnalysisPage = () => {
   return (
-    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-blue-900">SEO Analysis</h1>
+    <div className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-blue-900">SEO Analysis</h1>
         <p className="mt-1 text-sm text-gray-500">Analyze and optimize your website's SEO performance</p>
         
         {/* Rate Limit Information Banner */}
@@ -24,7 +24,7 @@ const SEOAnalysisPage = () => {
                   <strong>Free Tier:</strong> You can perform <span className="font-semibold text-blue-900">10 SEO analyses</span> per day to ensure fair usage.
                   This includes real Google PageSpeed insights and comprehensive SEO scoring.
                 </p>
-                <div className="mt-2 flex items-center space-x-4 text-xs">
+                <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-4 text-xs">
                   <span className="flex items-center">
                     <span className="w-2 h-2 bg-green-400 rounded-full mr-1"></span>
                     Real Google API data

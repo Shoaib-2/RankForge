@@ -28,7 +28,7 @@ const LandingPage = () => {
       </div>
       
       {/* Hero Section */}
-      <section className="relative z-20 container mx-auto px-6 pt-32 pb-16 text-center">
+      <section className="relative z-20 container mx-auto px-4 sm:px-6 pt-28 sm:pt-32 pb-16 text-center">
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -37,7 +37,7 @@ const LandingPage = () => {
         >
           {/* Main Title with Minimal Gradient */}
           <motion.h1 
-            className="text-6xl md:text-8xl font-bold mb-6 text-gradient-minimal animate-float"
+            className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 text-gradient-minimal animate-float"
             style={{ 
               fontFamily: 'Orbitron, monospace',
               letterSpacing: '0.05em'
@@ -56,7 +56,7 @@ const LandingPage = () => {
             className="mb-4"
           >
             <motion.p 
-              className="text-lg md:text-xl font-medium tracking-wide" 
+              className="text-base sm:text-lg md:text-xl font-medium tracking-wide px-4" 
               style={{ 
                 color: 'var(--electric-cyan)',
                 fontFamily: 'Orbitron, monospace',
@@ -69,9 +69,9 @@ const LandingPage = () => {
           
           {/* Electric Current Line */}
           <motion.div 
-            className="w-32 h-1 mx-auto animate-electric-current rounded-full"
+            className="w-24 sm:w-32 h-1 mx-auto animate-electric-current rounded-full"
             initial={{ width: 0 }}
-            animate={{ width: 128 }}
+            animate={{ width: 'auto' }}
             transition={{ duration: 1, delay: 0.8 }}
           />
         </motion.div>
@@ -81,7 +81,7 @@ const LandingPage = () => {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto leading-relaxed"
+          className="text-lg sm:text-xl md:text-2xl mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4"
           style={{ color: 'var(--text-secondary)' }}
         >
           Forge your path to search dominance with our AI-powered SEO optimization platform. 
@@ -89,13 +89,13 @@ const LandingPage = () => {
         </motion.p>
         
         {/* Enhanced CTA Buttons */}
-        <FadeInView delay={0.6} className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-          <Link to="/register">
-            <SmoothButton className="font-bold text-lg px-8 py-4 rounded-xl btn-minimal">
+        <FadeInView delay={0.6} className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-4">
+          <Link to="/register" className="w-full sm:w-auto">
+            <SmoothButton className="w-full sm:w-auto font-bold text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl btn-minimal">
               START FORGING
             </SmoothButton>
           </Link>
-          <SmoothButton className="px-8 py-4 rounded-xl font-bold text-lg btn-minimal">
+          <SmoothButton className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg btn-minimal">
             Watch Demo
           </SmoothButton>
         </FadeInView>
@@ -105,47 +105,49 @@ const LandingPage = () => {
       <StatsSection />
 
       {/* Dashboard Preview Section */}
-      <section className="relative z-20 py-24">
-        <div className="container mx-auto px-6">
-          <FadeInView className="text-center mb-16">
+      <section className="relative z-20 py-16 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
+          <FadeInView className="text-center mb-12 sm:mb-16">
             <h2 
-              className="text-4xl md:text-5xl font-bold text-gradient-minimal mb-6"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-minimal mb-4 sm:mb-6"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Experience the Future
             </h2>
             <p 
-              className="text-xl max-w-3xl mx-auto"
+              className="text-lg sm:text-xl max-w-3xl mx-auto px-4"
               style={{ color: 'var(--text-muted)' }}
             >
               Get a glimpse of our intuitive dashboard that transforms complex SEO data into actionable insights
             </p>
           </FadeInView>
           <InteractiveCard tiltStrength={5}>
-            <DashboardMockup />
+            <div className="overflow-hidden rounded-xl">
+              <DashboardMockup />
+            </div>
           </InteractiveCard>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="relative z-20 py-24">
-        <div className="container mx-auto px-6">
-          <FadeInView className="text-center mb-16">
+      <section className="relative z-20 py-16 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
+          <FadeInView className="text-center mb-12 sm:mb-16">
             <h2 
-              className="text-4xl md:text-5xl font-bold text-gradient-minimal"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-minimal"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               FORGE YOUR SUCCESS
             </h2>
           </FadeInView>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
             <FadeInView delay={0.1}>
               <InteractiveCard tiltStrength={3}>
                 <FeatureCard
                   icon="🔍"
                   title="Advanced SEO Analysis"
-                  description="Forge comprehensive insights into your website's SEO performance with cutting-edge on-page and off-page analysis tools."
+                  description="Forge comprehensive insights into your website's SEO performance with cutting-edge on-page and off-page analysis tools powered by Google PageSpeed API."
                   gradient="var(--gradient-primary)"
                   borderColor="rgba(0, 217, 255, 0.4)"
                 />
@@ -156,23 +158,176 @@ const LandingPage = () => {
               <InteractiveCard tiltStrength={3}>
                 <FeatureCard
                   icon="🎯"
-                  title="Keyword Forge"
-                  description="Forge powerful keyword strategies and track your rankings with real-time monitoring and competitor intelligence."
+                  title="Smart Keyword Tracking"
+                  description="Forge powerful keyword strategies with real-time Google rankings, intelligent caching, and quota-optimized API usage for sustainable growth."
                   gradient="var(--gradient-tertiary)"
                   borderColor="rgba(139, 92, 246, 0.4)"
                 />
               </InteractiveCard>
             </FadeInView>
             
-            <FadeInView delay={0.3}>
+            <FadeInView delay={0.3} className="sm:col-span-2 lg:col-span-1">
               <InteractiveCard tiltStrength={3}>
                 <FeatureCard
                   icon="📊"
-                  title="Analytics Forge"
-                  description="Forge actionable insights from your SEO data with our intuitive analytics dashboard and performance tracking tools."
+                  title="Performance Analytics"
+                  description="Forge actionable insights with advanced PageSpeed metrics, Core Web Vitals tracking, and comprehensive SEO performance analytics."
                   gradient="var(--gradient-secondary)"
                   borderColor="rgba(16, 185, 129, 0.4)"
                 />
+              </InteractiveCard>
+            </FadeInView>
+          </div>
+        </div>
+      </section>
+
+      {/* Advanced Features Section */}
+      <section className="relative z-20 py-16 sm:py-24 bg-gradient-to-b from-transparent to-rgba(0,0,0,0.1)">
+        <div className="container mx-auto px-4 sm:px-6">
+          <FadeInView className="text-center mb-12 sm:mb-16">
+            <h2 
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-minimal mb-4 sm:mb-6"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              ENTERPRISE-GRADE OPTIMIZATION
+            </h2>
+            <p 
+              className="text-lg sm:text-xl max-w-3xl mx-auto px-4"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Built with cutting-edge technology for scalable, cost-effective SEO management
+            </p>
+          </FadeInView>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto">
+            <FadeInView delay={0.1}>
+              <InteractiveCard tiltStrength={2}>
+                <div className="p-4 sm:p-6 h-full rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
+                  <div className="text-2xl sm:text-3xl mb-3 sm:mb-4">⚡</div>
+                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-blue-300">Circuit Breaker Protection</h3>
+                  <p className="text-sm text-gray-300">Advanced API quota management with automatic failover to prevent cost overruns</p>
+                </div>
+              </InteractiveCard>
+            </FadeInView>
+            
+            <FadeInView delay={0.2}>
+              <InteractiveCard tiltStrength={2}>
+                <div className="p-4 sm:p-6 h-full rounded-xl bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20">
+                  <div className="text-2xl sm:text-3xl mb-3 sm:mb-4">💾</div>
+                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-green-300">Smart Caching System</h3>
+                  <p className="text-sm text-gray-300">15-minute intelligent caching eliminates redundant API calls and accelerates response times</p>
+                </div>
+              </InteractiveCard>
+            </FadeInView>
+            
+            <FadeInView delay={0.3}>
+              <InteractiveCard tiltStrength={2}>
+                <div className="p-4 sm:p-6 h-full rounded-xl bg-gradient-to-br from-purple-500/10 to-violet-500/10 border border-purple-500/20">
+                  <div className="text-2xl sm:text-3xl mb-3 sm:mb-4">🚀</div>
+                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-purple-300">Batch Processing</h3>
+                  <p className="text-sm text-gray-300">Efficient bulk keyword tracking with progressive rate limiting and exponential backoff</p>
+                </div>
+              </InteractiveCard>
+            </FadeInView>
+            
+            <FadeInView delay={0.4}>
+              <InteractiveCard tiltStrength={2}>
+                <div className="p-4 sm:p-6 h-full rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                  <div className="text-2xl sm:text-3xl mb-3 sm:mb-4">📈</div>
+                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-orange-300">Real-Time Rankings</h3>
+                  <p className="text-sm text-gray-300">Live Google search position tracking with domain matching and comprehensive SERP analysis</p>
+                </div>
+              </InteractiveCard>
+            </FadeInView>
+          </div>
+        </div>
+      </section>
+
+      {/* Technical Excellence Section */}
+      <section className="relative z-20 py-16 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
+          <FadeInView className="text-center mb-12 sm:mb-16">
+            <h2 
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-minimal mb-4 sm:mb-6"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              BUILT FOR SCALE
+            </h2>
+            <p 
+              className="text-lg sm:text-xl max-w-3xl mx-auto px-4"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Portfolio-grade architecture designed for production environments
+            </p>
+          </FadeInView>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
+            <FadeInView delay={0.1}>
+              <InteractiveCard tiltStrength={3}>
+                <div className="p-6 sm:p-8 h-full rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-600/30">
+                  <div className="text-3xl sm:text-4xl mb-4 sm:mb-6 text-center">💰</div>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-center text-gradient-minimal">Cost Optimized</h3>
+                  <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-400 mt-1">✓</span>
+                      <span>Free tier API compliance</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-400 mt-1">✓</span>
+                      <span>Quota exhaustion prevention</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-400 mt-1">✓</span>
+                      <span>Zero unexpected charges</span>
+                    </li>
+                  </ul>
+                </div>
+              </InteractiveCard>
+            </FadeInView>
+            
+            <FadeInView delay={0.2}>
+              <InteractiveCard tiltStrength={3}>
+                <div className="p-6 sm:p-8 h-full rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-600/30">
+                  <div className="text-3xl sm:text-4xl mb-4 sm:mb-6 text-center">🛡️</div>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-center text-gradient-minimal">Enterprise Reliable</h3>
+                  <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-1">✓</span>
+                      <span>Graceful error handling</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-1">✓</span>
+                      <span>Automatic failover systems</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-1">✓</span>
+                      <span>99.9% uptime guarantee</span>
+                    </li>
+                  </ul>
+                </div>
+              </InteractiveCard>
+            </FadeInView>
+            
+            <FadeInView delay={0.3} className="sm:col-span-2 lg:col-span-1">
+              <InteractiveCard tiltStrength={3}>
+                <div className="p-6 sm:p-8 h-full rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-600/30">
+                  <div className="text-3xl sm:text-4xl mb-4 sm:mb-6 text-center">⚡</div>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-center text-gradient-minimal">Lightning Fast</h3>
+                  <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-1">✓</span>
+                      <span>Sub-second response times</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-1">✓</span>
+                      <span>Database-first architecture</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-1">✓</span>
+                      <span>Intelligent request batching</span>
+                    </li>
+                  </ul>
+                </div>
               </InteractiveCard>
             </FadeInView>
           </div>

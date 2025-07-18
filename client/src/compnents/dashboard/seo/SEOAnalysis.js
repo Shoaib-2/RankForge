@@ -182,11 +182,11 @@ const SEOAnalysis = () => {
         className="max-w-7xl mx-auto"
       >
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
             SEO Analysis Tool
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-base sm:text-lg">
             Analyze your website's SEO performance and get AI-powered insights
           </p>
         </div>
@@ -200,23 +200,23 @@ const SEOAnalysis = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="seo-analysis-section"
         >
-          <form onSubmit={handleAnalysis} className="flex flex-col sm:flex-row gap-4">
+          <form onSubmit={handleAnalysis} className="flex flex-col gap-4">
             <div className="flex-1">
               <input
                 type="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="Enter website URL (e.g., https://example.com)"
-                className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 required
                 disabled={loading}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <button
                 type="submit"
                 disabled={loading || !url.trim()}
-                className="export-button"
+                className="export-button w-full sm:w-auto"
               >
                 {loading ? (
                   <>
@@ -234,7 +234,7 @@ const SEOAnalysis = () => {
                 <button
                   type="button"
                   onClick={clearAnalysis}
-                  className="export-button"
+                  className="export-button w-full sm:w-auto"
                   style={{ background: 'linear-gradient(135deg, #6b7280, #4b5563)' }}
                 >
                   Clear
@@ -267,17 +267,17 @@ const SEOAnalysis = () => {
           >
             {/* SEO Score */}
             <div className="seo-analysis-section">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-                  <ChartBarIcon className="w-6 h-6 mr-2" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center">
+                  <ChartBarIcon className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                   SEO Score
                 </h2>
                 {results.score && (
-                  <div className="flex items-center gap-2">
-                    <div className={`score-badge ${getScoreColor(results.score).replace('text-', 'score-').replace('-600', '')}`}>
+                  <div className="flex items-center justify-center sm:justify-end gap-2">
+                    <div className={`score-badge ${getScoreColor(results.score).replace('text-', 'score-').replace('-600', '')} text-lg sm:text-xl`}>
                       {results.score}
                     </div>
-                    <span className="text-lg font-bold text-gray-800">
+                    <span className="text-lg sm:text-xl font-bold text-gray-800">
                       / 100
                     </span>
                   </div>
@@ -288,8 +288,8 @@ const SEOAnalysis = () => {
             {/* Recommendations */}
             {results.recommendations && results.recommendations.length > 0 && (
               <div className="seo-analysis-section">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                  <LightBulbIcon className="w-6 h-6 mr-2" />
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                  <LightBulbIcon className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                   Recommendations
                 </h3>
                 <div className="analysis-results">
@@ -302,14 +302,14 @@ const SEOAnalysis = () => {
                       >
                         <div className="flex items-start gap-3">
                           <IconComponent className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold">{rec.type}</span>
-                              <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(rec.priority)}`}>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+                              <span className="font-semibold text-sm sm:text-base">{rec.type}</span>
+                              <span className={`text-xs px-2 py-1 rounded-full w-fit ${getPriorityColor(rec.priority)}`}>
                                 {rec.priority}
                               </span>
                             </div>
-                            <p className="text-gray-700">{rec.description}</p>
+                            <p className="text-gray-700 text-sm sm:text-base leading-relaxed">{rec.description}</p>
                           </div>
                         </div>
                       </div>
@@ -331,27 +331,29 @@ const SEOAnalysis = () => {
 
             {/* AI Insights Section */}
             <div className="seo-analysis-section">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-gray-800 flex items-center">
-                  <SparklesIcon className="w-6 h-6 mr-2" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center">
+                  <SparklesIcon className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                   AI-Powered Insights
                 </h3>
                 {!results.aiInsights && analysisId && (
                   <button
                     onClick={handleGetAIInsights}
                     disabled={aiInsightsLoading || (attemptCount >= dailyLimit && !rateLimitLoading)}
-                    className="export-button"
+                    className="export-button w-full sm:w-auto"
                     style={{ background: 'linear-gradient(135deg, #8b5cf6, #ec4899)' }}
                   >
                     {aiInsightsLoading ? (
                       <>
                         <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                        Generating...
+                        <span className="hidden sm:inline">Generating...</span>
+                        <span className="sm:hidden">AI...</span>
                       </>
                     ) : (
                       <>
                         <BoltIcon className="w-4 h-4" />
-                        Get AI Insights
+                        <span className="hidden sm:inline">Get AI Insights</span>
+                        <span className="sm:hidden">AI Insights</span>
                         {!rateLimitLoading && (
                           <span className="text-xs bg-white/20 px-2 py-1 rounded ml-2">
                             {dailyLimit - attemptCount} left

@@ -29,12 +29,12 @@ const PageSpeedInsights = ({ pageSpeedData }) => {
   if (!hasMobile && !hasDesktop) {
     return (
       <div className="seo-analysis-section">
-        <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-          <RocketLaunchIcon className="w-6 h-6 mr-2" />
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6 flex items-center">
+          <RocketLaunchIcon className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
           Page Speed Insights
         </h2>
-        <div className="text-center py-8">
-          <p className="text-gray-500">No PageSpeed data available</p>
+        <div className="text-center py-6 sm:py-8">
+          <p className="text-gray-500 text-sm sm:text-base">No PageSpeed data available</p>
         </div>
       </div>
     );
@@ -86,34 +86,34 @@ const PageSpeedInsights = ({ pageSpeedData }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-        <RocketLaunchIcon className="w-6 h-6 mr-2" />
+      <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6 flex items-center">
+        <RocketLaunchIcon className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
         Page Speed Insights
       </h2>
 
       {/* Mobile/Desktop Tabs */}
       {hasMobile && hasDesktop && (
-        <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+        <div className="flex space-x-1 mb-4 sm:mb-6 bg-gray-100 p-1 rounded-lg">
           <button
             onClick={() => setActiveTab('mobile')}
-            className={`flex items-center px-4 py-2 rounded-md transition-colors ${
+            className={`flex items-center px-3 sm:px-4 py-2 rounded-md transition-colors text-sm ${
               activeTab === 'mobile'
                 ? 'bg-white text-blue-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-800'
             }`}
           >
-            <DevicePhoneMobileIcon className="w-4 h-4 mr-2" />
+            <DevicePhoneMobileIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
             Mobile
           </button>
           <button
             onClick={() => setActiveTab('desktop')}
-            className={`flex items-center px-4 py-2 rounded-md transition-colors ${
+            className={`flex items-center px-3 sm:px-4 py-2 rounded-md transition-colors text-sm ${
               activeTab === 'desktop'
                 ? 'bg-white text-blue-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-800'
             }`}
           >
-            <ComputerDesktopIcon className="w-4 h-4 mr-2" />
+            <ComputerDesktopIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
             Desktop
           </button>
         </div>
@@ -121,23 +121,23 @@ const PageSpeedInsights = ({ pageSpeedData }) => {
       
       {/* Overall Score */}
       <motion.div 
-        className="flex items-center justify-center md:justify-start mb-8"
+        className="flex flex-col sm:flex-row items-center justify-center sm:justify-start mb-6 sm:mb-8"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.8, type: "spring", bounce: 0.3 }}
       >
-        <div className={`score-badge w-24 h-24 text-3xl ${getScoreColor(score)}`}>
+        <div className={`score-badge w-20 h-20 sm:w-24 sm:h-24 text-2xl sm:text-3xl ${getScoreColor(score)}`}>
           {score}
         </div>
-        <div className="ml-6">
-          <h3 className="text-2xl font-bold text-gray-800">Performance Score</h3>
-          <p className="text-gray-600 mt-1">
+        <div className="ml-0 sm:ml-6 text-center sm:text-left mt-4 sm:mt-0">
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-800">Performance Score</h3>
+          <p className="text-gray-600 mt-1 text-sm sm:text-base">
             {score >= 90 ? (
-              <><SparklesIcon className="w-5 h-5 inline mr-1" />Excellent Performance!</>
+              <><SparklesIcon className="w-4 h-4 sm:w-5 sm:h-5 inline mr-1" />Excellent Performance!</>
             ) : score >= 50 ? (
-              <><HandThumbUpIcon className="w-5 h-5 inline mr-1" />Good Performance</>
+              <><HandThumbUpIcon className="w-4 h-4 sm:w-5 sm:h-5 inline mr-1" />Good Performance</>
             ) : (
-              <><WrenchScrewdriverIcon className="w-5 h-5 inline mr-1" />Needs Optimization</>
+              <><WrenchScrewdriverIcon className="w-4 h-4 sm:w-5 sm:h-5 inline mr-1" />Needs Optimization</>
             )}
           </p>
         </div>
@@ -145,7 +145,7 @@ const PageSpeedInsights = ({ pageSpeedData }) => {
 
       {/* Core Web Vitals */}
       {Object.keys(metrics).length > 0 ? (
-        <div className="page-speed-container mb-8">
+        <div className="page-speed-container mb-6 sm:mb-8">
           {Object.entries(metrics).map(([key, data], index) => (
             <motion.div 
               key={key} 
@@ -166,7 +166,7 @@ const PageSpeedInsights = ({ pageSpeedData }) => {
                 {typeof data.value === 'number' ? 
                   (data.value > 1 ? data.value.toFixed(1) : data.value.toFixed(3)) : 
                   data.value}
-                <span className="text-sm text-gray-500 ml-1">
+                <span className="text-xs sm:text-sm text-gray-500 ml-1">
                   {key.includes('Time') || key.includes('Paint') || key.includes('Index') ? 
                     (data.value > 1 ? 's' : 'ms') : 
                     (key.includes('Shift') ? '' : 'ms')}
@@ -191,17 +191,17 @@ const PageSpeedInsights = ({ pageSpeedData }) => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 mb-8">
-          <ClockIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">Core Web Vitals data not available</p>
+        <div className="text-center py-6 sm:py-8 mb-6 sm:mb-8">
+          <ClockIcon className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500 text-sm sm:text-base">Core Web Vitals data not available</p>
         </div>
       )}
 
       {/* Recommendations */}
       {recommendations && recommendations.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <LightBulbIcon className="w-5 h-5 mr-2" />
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+            <LightBulbIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Speed Optimization Tips ({recommendations.length})
           </h3>
           <div className="analysis-results">
@@ -214,16 +214,16 @@ const PageSpeedInsights = ({ pageSpeedData }) => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
               >
-                <div className="flex items-start">
+                <div className="flex items-start gap-3">
                   <div className={`score-badge ${
                     rec.impact === 'high' ? 'score-poor' : 'score-good'
                   }`}>
-                    {rec.impact === 'high' ? <ExclamationTriangleIcon className="w-5 h-5 text-red-500" /> : <BoltIcon className="w-5 h-5 text-yellow-500" />}
+                    {rec.impact === 'high' ? <ExclamationTriangleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" /> : <BoltIcon className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-semibold text-gray-800">{rec.title}</span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
+                      <span className="font-semibold text-gray-800 text-sm sm:text-base">{rec.title}</span>
+                      <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold w-fit ${
                         rec.impact === 'high' 
                           ? 'bg-red-100 text-red-700' 
                           : rec.impact === 'medium'
@@ -233,9 +233,9 @@ const PageSpeedInsights = ({ pageSpeedData }) => {
                         {rec.impact?.toUpperCase() || 'LOW'} IMPACT
                       </span>
                     </div>
-                    <p className="text-gray-600">{rec.description}</p>
+                    <p className="text-gray-600 text-sm sm:text-base mb-2">{rec.description}</p>
                     {rec.potentialSavings && (
-                      <p className="text-sm text-blue-600 mt-1">
+                      <p className="text-xs sm:text-sm text-blue-600">
                         Potential savings: {rec.potentialSavings}
                       </p>
                     )}

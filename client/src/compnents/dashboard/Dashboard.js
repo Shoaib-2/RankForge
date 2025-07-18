@@ -150,14 +150,14 @@ const Dashboard = () => {
 
         <div className="dashboard-controls">
           {/* Date Range Picker */}
-          <div className="flex flex-col sm:flex-row gap-2 items-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center">
             <DatePicker
               selected={dateRange.startDate}
               onChange={(date) => setDateRange(prev => ({ ...prev, startDate: date }))}
               selectsStart
               startDate={dateRange.startDate}
               endDate={dateRange.endDate}
-              className="futuristic-input text-responsive"
+              className="futuristic-input text-responsive w-full sm:w-auto"
               dateFormat="MMM d, yyyy"
               placeholderText="Start Date"
             />
@@ -169,7 +169,7 @@ const Dashboard = () => {
               startDate={dateRange.startDate}
               endDate={dateRange.endDate}
               minDate={dateRange.startDate}
-              className="futuristic-input text-responsive"
+              className="futuristic-input text-responsive w-full sm:w-auto"
               dateFormat="MMM d, yyyy"
               placeholderText="End Date"
             />
@@ -179,7 +179,7 @@ const Dashboard = () => {
           <motion.button
             onClick={fetchDashboardStats}
             disabled={loading}
-            className="futuristic-button"
+            className="futuristic-button w-full sm:w-auto"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -219,24 +219,24 @@ const Dashboard = () => {
 
       {/* Rate Limit Information */}
       <motion.div 
-        className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-lg p-4 mb-6"
+        className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <div className="flex items-start">
           <div className="flex-shrink-0">
-            <BoltIcon className="h-5 w-5 text-amber-500" />
+            <BoltIcon className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
           </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-amber-800">
+          <div className="ml-2 sm:ml-3">
+            <h3 className="text-xs sm:text-sm font-medium text-amber-800">
               🔒 Fair Usage Policy
             </h3>
-            <p className="mt-1 text-sm text-amber-700">
+            <p className="mt-1 text-xs sm:text-sm text-amber-700">
               This tool implements rate limiting (3 SEO analyses per session) to ensure fair API usage and prevent abuse. 
               This demonstrates <strong>production-ready security practices</strong> and responsible resource management.
             </p>
-            <div className="mt-2 flex items-center space-x-4 text-xs text-amber-600">
+            <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-amber-600">
               <span>✅ Industry-standard rate limiting</span>
               <span>✅ Real Google API integration</span>
               <span>✅ Professional error handling</span>
@@ -248,45 +248,45 @@ const Dashboard = () => {
       {/* Performance Metrics Section */}
       {performanceMetrics && (
         <motion.div 
-          className="bg-white rounded-xl shadow-lg p-6 mb-6"
+          className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">🚀 Real Performance Insights</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-600 mb-2">Average SEO Score</h4>
-              <p className="text-2xl font-bold text-blue-600">{performanceMetrics.averageScores.seo}</p>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">🚀 Real Performance Insights</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 sm:p-4">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-600 mb-2">Average SEO Score</h4>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600">{performanceMetrics.averageScores.seo}</p>
               <p className="text-xs text-gray-500">From {performanceMetrics.totalAnalyses} analyses</p>
             </div>
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-600 mb-2">Mobile Performance</h4>
-              <p className="text-2xl font-bold text-green-600">{performanceMetrics.averageScores.mobile}</p>
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 sm:p-4">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-600 mb-2">Mobile Performance</h4>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">{performanceMetrics.averageScores.mobile}</p>
               <p className="text-xs text-gray-500">Google PageSpeed Mobile</p>
             </div>
-            <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-600 mb-2">Desktop Performance</h4>
-              <p className="text-2xl font-bold text-purple-600">{performanceMetrics.averageScores.desktop}</p>
+            <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg p-3 sm:p-4">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-600 mb-2">Desktop Performance</h4>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-600">{performanceMetrics.averageScores.desktop}</p>
               <p className="text-xs text-gray-500">Google PageSpeed Desktop</p>
             </div>
           </div>
           
           {/* Core Web Vitals */}
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <h4 className="text-sm font-medium text-gray-600 mb-3">Core Web Vitals</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-                <span className="text-sm text-gray-600">LCP</span>
-                <span className="font-semibold text-gray-900">{performanceMetrics.coreWebVitals.lcp}s</span>
+            <h4 className="text-xs sm:text-sm font-medium text-gray-600 mb-3">Core Web Vitals</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2 sm:p-3">
+                <span className="text-xs sm:text-sm text-gray-600">LCP</span>
+                <span className="font-semibold text-gray-900 text-xs sm:text-sm">{performanceMetrics.coreWebVitals.lcp}s</span>
               </div>
-              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-                <span className="text-sm text-gray-600">FID</span>
-                <span className="font-semibold text-gray-900">{performanceMetrics.coreWebVitals.fid}ms</span>
+              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2 sm:p-3">
+                <span className="text-xs sm:text-sm text-gray-600">FID</span>
+                <span className="font-semibold text-gray-900 text-xs sm:text-sm">{performanceMetrics.coreWebVitals.fid}ms</span>
               </div>
-              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-                <span className="text-sm text-gray-600">CLS</span>
-                <span className="font-semibold text-gray-900">{performanceMetrics.coreWebVitals.cls}</span>
+              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2 sm:p-3">
+                <span className="text-xs sm:text-sm text-gray-600">CLS</span>
+                <span className="font-semibold text-gray-900 text-xs sm:text-sm">{performanceMetrics.coreWebVitals.cls}</span>
               </div>
             </div>
           </div>
@@ -336,12 +336,12 @@ const Dashboard = () => {
 
       {/* Analytics Section */}
       <motion.div 
-        className="chart-container mt-8"
+        className="chart-container mt-6 sm:mt-8"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
       >
-        <h2 className="chart-title mb-6">Analytics Overview</h2>
+        <h2 className="chart-title mb-4 sm:mb-6 text-lg sm:text-xl">Analytics Overview</h2>
         <AnalyticsDashboard />
       </motion.div>
     </div>
