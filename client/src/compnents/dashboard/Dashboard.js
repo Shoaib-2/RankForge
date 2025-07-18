@@ -233,7 +233,7 @@ const Dashboard = () => {
               🔒 Fair Usage Policy
             </h3>
             <p className="mt-1 text-xs sm:text-sm text-amber-700">
-              This tool implements rate limiting (3 SEO analyses per session) to ensure fair API usage and prevent abuse. 
+              This tool implements rate limiting (10 SEO analyses per session) to ensure fair API usage and prevent abuse. 
               This demonstrates <strong>production-ready security practices</strong> and responsible resource management.
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-amber-600">
