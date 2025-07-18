@@ -243,9 +243,22 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
-  padding: 1.5rem;
+  padding: 1rem;
   transition: all 0.3s ease;
   cursor: pointer;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .export-card {
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .export-card {
+    padding: 1.5rem;
+  }
 }
 
 .export-card:hover {
@@ -265,26 +278,54 @@
 
 .export-badge {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
+  padding: 0.25rem 0.5rem;
   background-color: #f3f4f6;
   color: #374151;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 500;
   border-radius: 9999px;
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .export-badge {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    margin-top: 0.75rem;
+  }
 }
 
 .export-option-card {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
-  padding: 1.5rem;
+  padding: 1rem;
   transition: all 0.3s ease;
+}
+
+@media (min-width: 640px) {
+  .export-option-card {
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .export-option-card {
+    padding: 1.5rem;
+  }
 }
 
 .email-form {
   display: flex;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .email-form {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
 }
 
 .export-section h2 {
@@ -324,17 +365,49 @@
 /* Enhanced Recommendations Styles */
 .recommendations-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .recommendations-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .recommendations-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .recommendations-grid {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  }
 }
 
 .recommendation-card {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
-  padding: 1.5rem;
+  padding: 1rem;
   transition: all 0.3s ease;
   border-left: 4px solid #d1d5db;
+}
+
+@media (min-width: 640px) {
+  .recommendation-card {
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .recommendation-card {
+    padding: 1.5rem;
+  }
 }
 
 .recommendation-card.priority-critical {
@@ -358,16 +431,29 @@
 }
 
 .recommendation-header {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .recommendation-header {
+    margin-bottom: 1rem;
+  }
 }
 
 .priority-icon {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2rem;
+  height: 2rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .priority-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
 }
 
 .priority-icon.priority-critical {
@@ -393,15 +479,28 @@
 .recommendation-meta {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 0.5rem;
 }
 
+@media (min-width: 640px) {
+  .recommendation-meta {
+    align-items: flex-end;
+  }
+}
+
 .priority-badge {
-  padding: 0.25rem 0.75rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
+}
+
+@media (min-width: 640px) {
+  .priority-badge {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+  }
 }
 
 .priority-badge.priority-critical {
@@ -431,11 +530,17 @@
 }
 
 .impact-bar {
-  width: 3rem;
+  width: 2.5rem;
   height: 0.25rem;
   background: #e5e7eb;
   border-radius: 9999px;
   overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .impact-bar {
+    width: 3rem;
+  }
 }
 
 .impact-fill {
@@ -445,10 +550,17 @@
 }
 
 .action-items {
-  margin: 1rem 0;
-  padding: 1rem;
+  margin: 0.75rem 0;
+  padding: 0.75rem;
   background: #f9fafb;
   border-radius: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .action-items {
+    margin: 1rem 0;
+    padding: 1rem;
+  }
 }
 
 .action-list {
@@ -467,10 +579,20 @@
 
 .recommendation-footer {
   display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
-  padding-top: 1rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
   border-top: 1px solid #f3f4f6;
+}
+
+@media (min-width: 640px) {
+  .recommendation-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
 }
 
 .time-estimate, .expected-impact {
