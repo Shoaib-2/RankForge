@@ -25,12 +25,40 @@ const keywordController = {
         const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
         const position = i === 0 ? rankingData.position : 
           (rankingData.position ? Math.max(1, rankingData.position + Math.floor(Math.random() * 10) - 5) : 
-          Math.floor(Math.random() * 50) + 1);
+          Math.floor(Math.random() * 100) + 1);
+        
+        // Generate trendy message for each historical ranking
+        let trendyMessage = null;
+        if (position) {
+          if (position === 1) {
+            trendyMessage = '🏆 #1 Champion! You\'re dominating!';
+          } else if (position <= 3) {
+            trendyMessage = `🥉 Top 3 ranking! #${position} is solid!`;
+          } else if (position <= 10) {
+            trendyMessage = `📊 First page! #${position} - great visibility!`;
+          } else if (position <= 20) {
+            trendyMessage = `📈 Ranking #${position} - second page, almost there!`;
+          } else if (position <= 50) {
+            trendyMessage = `🚀 Ranking #${position} - making progress, keep optimizing!`;
+          } else {
+            trendyMessage = `💪 Ranking #${position} - lots of room to grow!`;
+          }
+        } else if (domain) {
+          const motivationalMessages = [
+            '🔍 Not in top 100 yet - huge opportunity waiting!',
+            '💎 Hidden gem ready to shine - let\'s get ranking!',
+            '🌱 Great potential - time to plant those SEO seeds!',
+            '🎯 Target acquired - optimization mission begins!',
+            '⚡ Untapped opportunity - let\'s climb those rankings!'
+          ];
+          trendyMessage = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+        }
         
         historicalRankings.push({
           date,
           position,
-          searchVolume: rankingData.searchVolume + Math.floor(Math.random() * 1000) - 500
+          searchVolume: rankingData.searchVolume + Math.floor(Math.random() * 1000) - 500,
+          trendyMessage: i === 0 ? rankingData.trendyMessage : trendyMessage
         });
       }
 
@@ -57,7 +85,7 @@ const keywordController = {
       await newKeyword.save();
       
       // Return with analysis
-      const analysis = await keywordService.analyzeKeywordPerformance(keyword, domain, historicalRankings);
+      const analysis = await keywordService.analyzeKeywordPerformance(keyword, domain || 'example.com', historicalRankings);
       
       res.status(201).json({
         ...newKeyword.toObject(),
@@ -158,7 +186,8 @@ const keywordController = {
       keyword.rankings.push({
         date: new Date(),
         position: newRanking.position,
-        searchVolume: newRanking.searchVolume
+        searchVolume: newRanking.searchVolume,
+        trendyMessage: newRanking.trendyMessage
       });
 
       // Keep only last 30 days of data
@@ -203,7 +232,8 @@ const keywordController = {
       keyword.rankings.push({
         date: new Date(),
         position,
-        searchVolume: Math.floor(Math.random() * 10000)
+        searchVolume: Math.floor(Math.random() * 10000),
+        trendyMessage: position ? `🎯 Manual ranking update #${position}` : '🔍 Position cleared'
       });
 
       await keyword.save();

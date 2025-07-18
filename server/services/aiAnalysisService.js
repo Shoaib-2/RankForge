@@ -20,8 +20,11 @@ class AIAnalysisService {
     
     if (this.isEnabled) {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      // Use gemini-2.0-flash for latest model with better performance and quotas
-      this.model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      // Use the latest available model
+      this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      
+      // Test the model availability
+      this.testModelAvailability();
     }
     
     // Rate limiting configuration
@@ -35,6 +38,23 @@ class AIAnalysisService {
     } else {
       console.log('⚠️ AI Analysis Service disabled - No Gemini API key found');
       console.log('Current API key value:', apiKey ? `${apiKey.substring(0, 10)}...` : 'undefined');
+    }
+  }
+
+  /**
+   * Test model availability
+   */
+  async testModelAvailability() {
+    try {
+      // Try a simple test prompt
+      const result = await this.model.generateContent("Hello");
+      const response = await result.response;
+      logger.info('✅ Gemini model test successful');
+    } catch (error) {
+      logger.error('❌ Gemini model test failed:', error.message);
+      if (error.message.includes('not found')) {
+        logger.warn('Try updating to use: gemini-1.5-pro or gemini-1.5-flash-latest');
+      }
     }
   }
 
@@ -178,13 +198,7 @@ class AIAnalysisService {
         // Log prompt length for monitoring
         logger.info(`AI prompt length: ${prompt.length} characters (est. ${Math.ceil(prompt.length / 4)} tokens)`);
         
-        const result = await this.model.generateContent({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: {
-            maxOutputTokens: 400, // Increased slightly to prevent JSON truncation
-            temperature: 0.7,
-          },
-        });
+        const result = await this.model.generateContent(prompt);
 
         const response = await result.response;
         let responseText = response.text();

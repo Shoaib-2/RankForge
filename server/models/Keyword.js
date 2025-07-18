@@ -25,6 +25,10 @@ const keywordSchema = new mongoose.Schema({
     searchVolume: {
       type: Number,
       default: 0
+    },
+    trendyMessage: {
+      type: String,
+      default: null
     }
   }],
   competitors: [{

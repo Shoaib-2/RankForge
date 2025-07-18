@@ -571,6 +571,16 @@ const KeywordTracker = () => {
                       #{keyword.rankings[keyword.rankings.length - 1]?.position || 'N/A'}
                     </span>
                   </div>
+                  
+                  {/* Trendy Message */}
+                  {keyword.rankings[keyword.rankings.length - 1]?.trendyMessage && (
+                    <div className="mt-2 p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg">
+                      <p className="text-sm font-medium text-purple-800 flex items-center">
+                        <BoltIcon className="w-4 h-4 mr-2" />
+                        {keyword.rankings[keyword.rankings.length - 1].trendyMessage}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Ranking Chart */}
