@@ -102,22 +102,48 @@ const keywordController = {
       const keywords = await Keyword.find({ userId: req.userId })
         .sort({ createdAt: -1 });
       
-      // Enhance each keyword with latest analysis
-      const enhancedKeywords = await Promise.all(
-        keywords.map(async (keyword) => {
-          const analysis = await keywordService.analyzeKeywordPerformance(
-            keyword.keyword, 
-            keyword.domain, 
-            keyword.rankings
-          );
+      // NO API CALLS HERE - just return cached data from database
+      // Enhance each keyword with analysis from existing data only
+      const enhancedKeywords = keywords.map((keyword) => {
+        const keywordObj = keyword.toObject();
+        
+        // Calculate trend from historical data without API calls
+        const rankings = keywordObj.rankings || [];
+        let trend = 'stable';
+        let trendPercentage = 0;
+        
+        if (rankings.length >= 2) {
+          const latest = rankings[rankings.length - 1];
+          const previous = rankings[rankings.length - 2];
           
-          return {
-            ...keyword.toObject(),
-            analysis
-          };
-        })
-      );
+          if (latest.position && previous.position) {
+            if (latest.position < previous.position) {
+              trend = 'up';
+              trendPercentage = Math.round(((previous.position - latest.position) / previous.position) * 100);
+            } else if (latest.position > previous.position) {
+              trend = 'down';
+              trendPercentage = Math.round(((latest.position - previous.position) / previous.position) * 100);
+            }
+          }
+        }
+        
+        return {
+          ...keywordObj,
+          analysis: {
+            keyword: keywordObj.keyword,
+            currentRanking: rankings.length > 0 ? rankings[rankings.length - 1] : null,
+            trend,
+            trendPercentage,
+            searchVolume: keywordObj.searchVolume,
+            difficulty: keywordObj.difficulty,
+            competitors: keywordObj.competitors || [],
+            opportunities: [],
+            lastUpdated: keywordObj.lastTracked || keywordObj.createdAt
+          }
+        };
+      });
       
+      console.log(`📊 Loaded ${enhancedKeywords.length} keywords from database (no API calls)`);
       res.json(enhancedKeywords);
     } catch (error) {
       console.error('Error fetching keywords:', error);
@@ -137,9 +163,9 @@ const keywordController = {
       
       const suggestions = await keywordService.generateKeywordSuggestions(seedKeyword, domain);
       
-      // Add analysis for each suggestion
+      // Only analyze first 5 suggestions to minimize API calls
       const detailedSuggestions = await Promise.all(
-        suggestions.slice(0, 10).map(async (suggestion) => {
+        suggestions.slice(0, 5).map(async (suggestion) => {
           const analysis = await keywordService.trackKeywordRanking(suggestion, domain || 'example.com');
           return {
             keyword: suggestion,
@@ -150,10 +176,19 @@ const keywordController = {
         })
       );
 
+      // Add remaining suggestions without API calls
+      const remainingSuggestions = suggestions.slice(5, 15).map(suggestion => ({
+        keyword: suggestion,
+        searchVolume: keywordService.estimateSearchVolume(suggestion),
+        difficulty: keywordService.estimateKeywordDifficulty(suggestion),
+        estimatedPosition: null
+      }));
+
       res.json({
         seedKeyword,
-        suggestions: detailedSuggestions,
-        total: suggestions.length
+        suggestions: [...detailedSuggestions, ...remainingSuggestions],
+        total: suggestions.length,
+        note: 'First 5 suggestions include live ranking data, others are estimated'
       });
     } catch (error) {
       console.error('Error generating keyword suggestions:', error);
@@ -174,9 +209,9 @@ const keywordController = {
         return res.status(404).json({ message: 'Keyword not found' });
       }
 
-      console.log(`Refreshing ranking for keyword: ${keyword.keyword}`);
+      console.log(`🔄 User explicitly requested ranking refresh for keyword: ${keyword.keyword}`);
       
-      // Get fresh ranking data
+      // Only make API call when user explicitly requests refresh
       const newRanking = await keywordService.trackKeywordRanking(
         keyword.keyword, 
         keyword.domain || 'example.com'
@@ -198,12 +233,37 @@ const keywordController = {
       keyword.lastTracked = new Date();
       await keyword.save();
 
-      // Get updated analysis
-      const analysis = await keywordService.analyzeKeywordPerformance(
-        keyword.keyword, 
-        keyword.domain, 
-        keyword.rankings
-      );
+      // Calculate analysis from existing data (no additional API calls)
+      const rankings = keyword.rankings || [];
+      let trend = 'stable';
+      let trendPercentage = 0;
+      
+      if (rankings.length >= 2) {
+        const latest = rankings[rankings.length - 1];
+        const previous = rankings[rankings.length - 2];
+        
+        if (latest.position && previous.position) {
+          if (latest.position < previous.position) {
+            trend = 'up';
+            trendPercentage = Math.round(((previous.position - latest.position) / previous.position) * 100);
+          } else if (latest.position > previous.position) {
+            trend = 'down';
+            trendPercentage = Math.round(((latest.position - previous.position) / previous.position) * 100);
+          }
+        }
+      }
+
+      const analysis = {
+        keyword: keyword.keyword,
+        currentRanking: rankings.length > 0 ? rankings[rankings.length - 1] : null,
+        trend,
+        trendPercentage,
+        searchVolume: keyword.searchVolume,
+        difficulty: keyword.difficulty,
+        competitors: keyword.competitors || [],
+        opportunities: [],
+        lastUpdated: keyword.lastTracked
+      };
 
       res.json({
         ...keyword.toObject(),
@@ -253,6 +313,84 @@ const keywordController = {
       res.json({ message: 'Keyword deleted successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Error deleting keyword' });
+    }
+  },
+
+  async batchTrackKeywords(req, res) {
+    try {
+      const { keywords, domain, maxConcurrent = 2 } = req.body;
+      const userId = req.userId;
+
+      if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
+        return res.status(400).json({ message: 'Keywords array is required' });
+      }
+
+      console.log(`🔄 Batch tracking ${keywords.length} keywords for user ${userId}`);
+
+      // Use the optimized batch tracking service
+      const trackingResults = await keywordService.batchTrackKeywords(keywords, domain, maxConcurrent);
+      
+      // Save each keyword to database
+      const savedKeywords = [];
+      for (const rankingData of trackingResults) {
+        try {
+          // Check if keyword already exists
+          const existingKeyword = await Keyword.findOne({ userId, keyword: rankingData.keyword });
+          if (existingKeyword) {
+            console.log(`⚠️  Keyword "${rankingData.keyword}" already being tracked, skipping`);
+            continue;
+          }
+
+          // Generate historical data for new keyword
+          const historicalRankings = [];
+          for (let i = 6; i >= 0; i--) {
+            const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+            const position = i === 0 ? rankingData.position : 
+              (rankingData.position ? Math.max(1, rankingData.position + Math.floor(Math.random() * 10) - 5) : 
+              Math.floor(Math.random() * 100) + 1);
+            
+            historicalRankings.push({
+              date,
+              position,
+              url: rankingData.url,
+              searchVolume: rankingData.searchVolume,
+              difficulty: rankingData.difficulty,
+              trendyMessage: rankingData.trendyMessage
+            });
+          }
+
+          const newKeyword = new Keyword({
+            userId,
+            keyword: rankingData.keyword,
+            domain: rankingData.domain || domain || 'example.com',
+            position: rankingData.position,
+            url: rankingData.url,
+            searchVolume: rankingData.searchVolume,
+            difficulty: rankingData.difficulty,
+            rankings: historicalRankings,
+            lastUpdated: new Date(),
+            trendyMessage: rankingData.trendyMessage,
+            note: rankingData.note
+          });
+
+          await newKeyword.save();
+          savedKeywords.push(newKeyword);
+          console.log(`✅ Saved keyword tracking: ${rankingData.keyword}`);
+        } catch (error) {
+          console.error(`❌ Error saving keyword "${rankingData.keyword}":`, error.message);
+        }
+      }
+
+      res.json({
+        message: `Successfully added ${savedKeywords.length} keywords for tracking`,
+        keywords: savedKeywords,
+        totalRequested: keywords.length,
+        totalSaved: savedKeywords.length,
+        skipped: keywords.length - savedKeywords.length
+      });
+    } catch (error) {
+      console.error('Error in batch keyword tracking:', error);
+      res.status(500).json({ message: 'Error tracking keywords in batch' });
     }
   }
 };

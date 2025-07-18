@@ -13,6 +13,22 @@ class KeywordService {
     // Using Google's related searches and autocomplete APIs
     this.KEYWORD_TOOLS_API = 'https://suggestqueries.google.com/complete/search';
     
+    // Circuit breaker for Google Custom Search API
+    this.circuitBreaker = {
+      isOpen: false,
+      failureCount: 0,
+      lastFailureTime: null,
+      resetTimeout: 300000, // 5 minutes
+      maxFailures: 3
+    };
+    
+    // Reset circuit breaker on startup for testing
+    this.resetCircuitBreaker();
+    
+    // Simple in-memory cache for API results (15 minutes TTL)
+    this.cache = new Map();
+    this.cacheTimeout = 15 * 60 * 1000; // 15 minutes
+    
     // Log API status on startup
     if (!this.GOOGLE_API_KEY || !this.GOOGLE_CSE_ID) {
       console.log('⚠️  Google API Key or CSE ID not found - will use mock data for keyword tracking');
@@ -24,6 +40,65 @@ class KeywordService {
     }
   }
 
+  // Reset circuit breaker (for testing purposes)
+  resetCircuitBreaker() {
+    this.circuitBreaker.isOpen = false;
+    this.circuitBreaker.failureCount = 0;
+    this.circuitBreaker.lastFailureTime = null;
+    console.log('🔄 Circuit breaker reset - API calls enabled');
+  }
+
+  // Check if circuit breaker should allow API calls
+  canMakeApiCall() {
+    if (!this.circuitBreaker.isOpen) {
+      return true;
+    }
+    
+    // Check if we should reset the circuit breaker
+    const now = Date.now();
+    if (now - this.circuitBreaker.lastFailureTime > this.circuitBreaker.resetTimeout) {
+      console.log('🔄 Circuit breaker reset - attempting API calls again');
+      this.circuitBreaker.isOpen = false;
+      this.circuitBreaker.failureCount = 0;
+      return true;
+    }
+    
+    return false;
+  }
+
+  // Record API failure
+  recordApiFailure() {
+    this.circuitBreaker.failureCount++;
+    this.circuitBreaker.lastFailureTime = Date.now();
+    
+    if (this.circuitBreaker.failureCount >= this.circuitBreaker.maxFailures) {
+      this.circuitBreaker.isOpen = true;
+      console.log(`🚨 Circuit breaker opened - API calls blocked for ${this.circuitBreaker.resetTimeout / 60000} minutes`);
+    }
+  }
+
+  // Get cached result
+  getCachedResult(keyword, domain) {
+    const cacheKey = `${keyword}-${domain}`;
+    const cached = this.cache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+      console.log(`💾 Using cached result for "${keyword}"`);
+      return cached.data;
+    }
+    
+    return null;
+  }
+
+  // Set cached result
+  setCachedResult(keyword, domain, data) {
+    const cacheKey = `${keyword}-${domain}`;
+    this.cache.set(cacheKey, {
+      data,
+      timestamp: Date.now()
+    });
+  }
+
   // Track keyword ranking using Google Custom Search API
   async trackKeywordRanking(keyword, domain, targetUrl = null) {
     try {
@@ -32,6 +107,18 @@ class KeywordService {
       // Normalize domain parameter
       if (!domain || domain === 'null' || domain === 'undefined') {
         domain = null;
+      }
+      
+      // Check cache first
+      const cachedResult = this.getCachedResult(keyword, domain);
+      if (cachedResult) {
+        return cachedResult;
+      }
+      
+      // Check circuit breaker
+      if (!this.canMakeApiCall()) {
+        console.log('🚨 Circuit breaker is open - using mock data to prevent API quota exhaustion');
+        return this.generateMockRankingData(keyword, domain || 'example.com');
       }
       
       // Check if API key and CSE ID are available
@@ -57,6 +144,8 @@ class KeywordService {
       let position = null;
       let foundUrl = null;
       let searchResults = [];
+      let rateLimitCount = 0;
+      const maxRateLimitRetries = 3;
       
       // Search in batches of 10 results, up to 100 total
       for (let start = 1; start <= 91; start += 10) {
@@ -77,6 +166,9 @@ class KeywordService {
               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
           });
+          
+          // Reset rate limit counter on successful request
+          rateLimitCount = 0;
           
           if (searchResponse.data && searchResponse.data.items) {
             const results = searchResponse.data.items;
@@ -104,7 +196,7 @@ class KeywordService {
             if (results.length < 10) break;
             
             // Add a small delay to avoid hitting rate limits
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 200));
             
           } else {
             // If no results in this batch, stop searching
@@ -112,14 +204,36 @@ class KeywordService {
           }
         } catch (batchError) {
           console.log(`Error searching batch starting at ${start}:`, batchError.message);
-          // If we hit a rate limit, wait a bit longer and continue
+          
+          // Handle rate limiting with circuit breaker
           if (batchError.response?.status === 429) {
-            console.log('Rate limit hit, waiting 2 seconds...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            rateLimitCount++;
+            this.recordApiFailure(); // Record failure in circuit breaker
+            
+            if (rateLimitCount >= maxRateLimitRetries) {
+              console.log(`❌ Rate limit exceeded ${maxRateLimitRetries} times, stopping search and using available results`);
+              break;
+            }
+            
+            const waitTime = Math.min(2000 * Math.pow(2, rateLimitCount - 1), 10000); // Exponential backoff, max 10 seconds
+            console.log(`Rate limit hit (${rateLimitCount}/${maxRateLimitRetries}), waiting ${waitTime}ms...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            
+            // Retry the same batch (don't increment start)
+            start -= 10;
             continue;
           }
-          // For other errors, continue to next batch
-          continue;
+          
+          // For other errors (403, 500, etc.), record failure and stop
+          if (batchError.response?.status === 403) {
+            console.log('❌ API access denied - check API key and CSE ID permissions');
+            this.recordApiFailure();
+            break;
+          }
+          
+          // For other errors, record failure and continue
+          this.recordApiFailure();
+          break;
         }
       }
       
@@ -158,7 +272,7 @@ class KeywordService {
           trendyMessage = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
         }
         
-        return {
+        const result = {
           keyword,
           position: position || null,
           url: foundUrl,
@@ -171,6 +285,11 @@ class KeywordService {
           note: position ? null : (domain ? `🔍 ${domain} isn't ranking in top ${searchResults.length} yet - time to optimize!` : 'No domain specified'),
           trendyMessage: trendyMessage
         };
+        
+        // Cache the successful result
+        this.setCachedResult(keyword, domain, result);
+        
+        return result;
       }
       
       // Fallback to mock data if API fails
@@ -298,6 +417,53 @@ class KeywordService {
       `${seedKeyword} tools`
     ];
     return suggestions;
+  }
+
+  // Batch track multiple keywords with better rate limiting
+  async batchTrackKeywords(keywords, domain, maxConcurrent = 2) {
+    const results = [];
+    const chunks = [];
+    
+    // Split keywords into chunks to avoid overwhelming the API
+    for (let i = 0; i < keywords.length; i += maxConcurrent) {
+      chunks.push(keywords.slice(i, i + maxConcurrent));
+    }
+    
+    console.log(`📊 Tracking ${keywords.length} keywords in ${chunks.length} batches (${maxConcurrent} concurrent)`);
+    
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      console.log(`Processing batch ${i + 1}/${chunks.length}: ${chunk.join(', ')}`);
+      
+      try {
+        // Process chunk with concurrent requests
+        const chunkPromises = chunk.map(keyword => 
+          this.trackKeywordRanking(keyword, domain).catch(error => {
+            console.error(`Error tracking keyword "${keyword}":`, error.message);
+            return this.generateMockRankingData(keyword, domain);
+          })
+        );
+        
+        const chunkResults = await Promise.all(chunkPromises);
+        results.push(...chunkResults);
+        
+        // Add delay between batches to respect rate limits
+        if (i < chunks.length - 1) {
+          const delay = Math.min(3000 + (i * 1000), 10000); // Progressive delay, max 10 seconds
+          console.log(`⏳ Waiting ${delay}ms before next batch...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      } catch (error) {
+        console.error(`Error processing batch ${i + 1}:`, error.message);
+        // Add mock data for failed batch
+        chunk.forEach(keyword => {
+          results.push(this.generateMockRankingData(keyword, domain));
+        });
+      }
+    }
+    
+    console.log(`✅ Completed tracking ${results.length} keywords`);
+    return results;
   }
 
   // Analyze keyword performance

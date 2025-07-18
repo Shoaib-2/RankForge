@@ -7,6 +7,7 @@ router.use(authMiddleware);
 
 // Keyword routes - rate limiting now handled by aiAnalysisService in controller
 router.post('/add', keywordController.addKeyword);
+router.post('/batch', keywordController.batchTrackKeywords);
 router.get('/list', keywordController.getKeywords);
 router.post('/suggestions', keywordController.generateKeywordSuggestions);
 router.put('/:keywordId/ranking', keywordController.updateKeywordRanking);
