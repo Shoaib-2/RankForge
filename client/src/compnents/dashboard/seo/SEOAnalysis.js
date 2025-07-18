@@ -5,6 +5,7 @@ import { useSEO } from '../../../context/SeoContext';
 import authService from '../../../services/authService';
 import AIInsights from './AIInsights';
 import AIUsageTracker from './AIUsageTracker';
+import PageSpeedInsights from './PageSpeedInsights';
 import ExportOptions from '../export/ExportOptions';
 import { 
   ExclamationTriangleIcon, 
@@ -316,6 +317,16 @@ const SEOAnalysis = () => {
                   })}
                 </div>
               </div>
+            )}
+
+            {/* PageSpeed Insights */}
+            {results.analysis?.technical?.pageSpeed && (
+              <PageSpeedInsights 
+                pageSpeedData={{
+                  mobile: results.analysis.technical.pageSpeed.mobile,
+                  desktop: results.analysis.technical.pageSpeed.desktop
+                }}
+              />
             )}
 
             {/* AI Insights Section */}

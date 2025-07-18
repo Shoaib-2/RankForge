@@ -2,9 +2,17 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Test PowerPoint Export",
+			"label": "Start Server",
 			"type": "shell",
-			"command": "cd server && npm start",
+			"command": "cd server ; npm start",
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Start Client",
+			"type": "shell",
+			"command": "cd client ; npm start",
 			"group": "build",
 			"isBackground": true,
 			"problemMatcher": []

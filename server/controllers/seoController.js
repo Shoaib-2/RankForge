@@ -33,6 +33,9 @@ const seoController = {
       // Get complete analysis
       const analysisResults = await seoAnalyzer.analyzeContent(url);
       
+      // Debug: Log the PageSpeed structure
+      console.log('PageSpeed Analysis Results:', JSON.stringify(analysisResults?.technicalAnalysis?.pageSpeed, null, 2));
+      
       // Calculate overall score
       const score = calculateOverallScore(analysisResults);
 
@@ -85,24 +88,79 @@ const seoController = {
               issues: analysisResults?.technicalAnalysis?.mobileResponsiveness?.issues || []
             },
             pageSpeed: {
-              score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.score || 0),
-              metrics: {
-                firstContentfulPaint: {
-                  value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.metrics?.firstContentfulPaint?.value || 0),
-                  score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.metrics?.firstContentfulPaint?.score || 0)
+              mobile: {
+                score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.score || 0),
+                coreWebVitals: {
+                  firstContentfulPaint: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.firstContentfulPaint?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.firstContentfulPaint?.score || 0)
+                  },
+                  speedIndex: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.speedIndex?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.speedIndex?.score || 0)
+                  },
+                  largestContentfulPaint: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.largestContentfulPaint?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.largestContentfulPaint?.score || 0)
+                  },
+                  timeToInteractive: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.timeToInteractive?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.timeToInteractive?.score || 0)
+                  },
+                  totalBlockingTime: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.totalBlockingTime?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.totalBlockingTime?.score || 0)
+                  },
+                  cumulativeLayoutShift: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.cumulativeLayoutShift?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.coreWebVitals?.cumulativeLayoutShift?.score || 0)
+                  }
                 },
-                speedIndex: {
-                  value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.metrics?.speedIndex?.value || 0),
-                  score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.metrics?.speedIndex?.score || 0)
+                opportunities: (analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.opportunities || []).map(opp => ({
+                  type: 'warning',
+                  message: opp.title || 'Performance improvement opportunity',
+                  title: opp.title,
+                  description: opp.description,
+                  potentialSavings: opp.potentialSavings,
+                  impact: opp.impact
+                }))
+              },
+              desktop: {
+                score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.score || 0),
+                coreWebVitals: {
+                  firstContentfulPaint: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.firstContentfulPaint?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.firstContentfulPaint?.score || 0)
+                  },
+                  speedIndex: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.speedIndex?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.speedIndex?.score || 0)
+                  },
+                  largestContentfulPaint: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.largestContentfulPaint?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.largestContentfulPaint?.score || 0)
+                  },
+                  timeToInteractive: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.timeToInteractive?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.timeToInteractive?.score || 0)
+                  },
+                  totalBlockingTime: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.totalBlockingTime?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.totalBlockingTime?.score || 0)
+                  },
+                  cumulativeLayoutShift: {
+                    value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.cumulativeLayoutShift?.value || 0),
+                    score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.coreWebVitals?.cumulativeLayoutShift?.score || 0)
+                  }
                 },
-                largestContentfulPaint: {
-                  value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.metrics?.largestContentfulPaint?.value || 0),
-                  score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.metrics?.largestContentfulPaint?.score || 0)
-                },
-                timeToInteractive: {
-                  value: Number(analysisResults?.technicalAnalysis?.pageSpeed?.metrics?.timeToInteractive?.value || 0),
-                  score: Number(analysisResults?.technicalAnalysis?.pageSpeed?.metrics?.timeToInteractive?.score || 0)
-                }
+                opportunities: (analysisResults?.technicalAnalysis?.pageSpeed?.desktop?.opportunities || []).map(opp => ({
+                  type: 'warning',
+                  message: opp.title || 'Performance improvement opportunity',
+                  title: opp.title,
+                  description: opp.description,
+                  potentialSavings: opp.potentialSavings,
+                  impact: opp.impact
+                }))
               }
             },
             recommendations: analysisResults?.technicalAnalysis?.recommendations?.map(rec => ({
@@ -358,8 +416,8 @@ function calculateOverallScore(analysisResults) {
     score -= 15;
   }
 
-  // Safely check page speed score
-  const pageSpeedScore = analysisResults?.technicalAnalysis?.pageSpeed?.score;
+  // Safely check page speed score (use mobile score as primary)
+  const pageSpeedScore = analysisResults?.technicalAnalysis?.pageSpeed?.mobile?.score;
   if (typeof pageSpeedScore === 'number' && !isNaN(pageSpeedScore)) {
     score -= Math.max(0, (100 - pageSpeedScore) * 0.15);
   }

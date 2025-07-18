@@ -1,4 +1,6 @@
 // server/services/mobileAnalyzer.js
+const cheerio = require('cheerio');
+
 const mobileAnalyzer = {
     async checkMobileResponsiveness(html) {
       const $ = cheerio.load(html);

@@ -272,7 +272,7 @@ class SeoAnalyzer {
     try {
       const [mobileResults, pageSpeedResults] = await Promise.all([
         this.checkMobileResponsiveness(url),
-        pageSpeedAnalyzer.analyze(url)
+        googlePageSpeed.analyzePageSpeed(url)
       ]);
   
       return {
@@ -282,11 +282,7 @@ class SeoAnalyzer {
           issues: mobileResults.issues,
           recommendations: mobileResults.recommendations
         },
-        pageSpeed: {
-          score: Number(pageSpeedResults.score),
-          metrics: pageSpeedResults.metrics,
-          recommendations: pageSpeedResults.recommendations
-        }
+        pageSpeed: pageSpeedResults // This already comes with mobile and desktop data
       };
     } catch (error) {
       console.error('Technical analysis error:', error);
@@ -298,14 +294,26 @@ class SeoAnalyzer {
           recommendations: []
         },
         pageSpeed: {
-          score: 0,
-          metrics: {
-            firstContentfulPaint: { value: 0, score: 0 },
-            speedIndex: { value: 0, score: 0 },
-            largestContentfulPaint: { value: 0, score: 0 },
-            timeToInteractive: { value: 0, score: 0 }
+          mobile: {
+            score: 0,
+            coreWebVitals: {
+              firstContentfulPaint: { value: 0, score: 0 },
+              speedIndex: { value: 0, score: 0 },
+              largestContentfulPaint: { value: 0, score: 0 },
+              timeToInteractive: { value: 0, score: 0 }
+            },
+            opportunities: []
           },
-          recommendations: []
+          desktop: {
+            score: 0,
+            coreWebVitals: {
+              firstContentfulPaint: { value: 0, score: 0 },
+              speedIndex: { value: 0, score: 0 },
+              largestContentfulPaint: { value: 0, score: 0 },
+              timeToInteractive: { value: 0, score: 0 }
+            },
+            opportunities: []
+          }
         }
       };
     }

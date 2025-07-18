@@ -16,6 +16,15 @@ const recommendationSchema = new mongoose.Schema({
     default: 1,
     min: 1,
     max: 5 // Priority scale 1-5
+  },
+  // Additional fields for PageSpeed opportunities
+  title: String,
+  description: String,
+  potentialSavings: String,
+  impact: {
+    type: String,
+    enum: ['low', 'medium', 'high'],
+    default: 'medium'
   }
 }, { _id: false }); // Disable _id for subdocuments
 
@@ -84,16 +93,30 @@ const seoAnalysisSchema = new mongoose.Schema({
     },
     technical: {
       pageSpeed: {
-        score: Number,
-        metrics: {
-          firstContentfulPaint: metricSchema,
-          speedIndex: metricSchema,
-          largestContentfulPaint: metricSchema,
-          timeToInteractive: metricSchema,
-          totalBlockingTime: metricSchema,
-          cumulativeLayoutShift: metricSchema
+        mobile: {
+          score: Number,
+          coreWebVitals: {
+            firstContentfulPaint: metricSchema,
+            speedIndex: metricSchema,
+            largestContentfulPaint: metricSchema,
+            timeToInteractive: metricSchema,
+            totalBlockingTime: metricSchema,
+            cumulativeLayoutShift: metricSchema
+          },
+          opportunities: [recommendationSchema]
         },
-        recommendations: [recommendationSchema]
+        desktop: {
+          score: Number,
+          coreWebVitals: {
+            firstContentfulPaint: metricSchema,
+            speedIndex: metricSchema,
+            largestContentfulPaint: metricSchema,
+            timeToInteractive: metricSchema,
+            totalBlockingTime: metricSchema,
+            cumulativeLayoutShift: metricSchema
+          },
+          opportunities: [recommendationSchema]
+        }
       },
       mobileResponsiveness: {
         score: Number,
