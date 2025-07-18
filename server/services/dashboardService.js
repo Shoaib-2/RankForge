@@ -119,17 +119,17 @@ class DashboardService {
         dayData.analysisCount++;
 
         // Extract PageSpeed data if available
-        if (analysis.pageSpeed) {
-          if (analysis.pageSpeed.mobile?.score) {
-            dayData.mobileScores.push(analysis.pageSpeed.mobile.score);
+        if (analysis.analysis?.technical?.pageSpeed) {
+          if (analysis.analysis.technical.pageSpeed.mobile?.score) {
+            dayData.mobileScores.push(analysis.analysis.technical.pageSpeed.mobile.score);
           }
-          if (analysis.pageSpeed.desktop?.score) {
-            dayData.desktopScores.push(analysis.pageSpeed.desktop.score);
+          if (analysis.analysis.technical.pageSpeed.desktop?.score) {
+            dayData.desktopScores.push(analysis.analysis.technical.pageSpeed.desktop.score);
           }
           
           // Core Web Vitals from mobile data
-          if (analysis.pageSpeed.mobile?.coreWebVitals) {
-            const cwv = analysis.pageSpeed.mobile.coreWebVitals;
+          if (analysis.analysis.technical.pageSpeed.mobile?.coreWebVitals) {
+            const cwv = analysis.analysis.technical.pageSpeed.mobile.coreWebVitals;
             if (cwv.largestContentfulPaint?.value) {
               dayData.coreWebVitals.lcp.push(cwv.largestContentfulPaint.value);
             }
@@ -186,13 +186,13 @@ class DashboardService {
         url: analysis.url,
         domain: analysis.domain,
         seoScore: analysis.score || 0,
-        mobileScore: analysis.pageSpeed?.mobile?.score || 0,
-        desktopScore: analysis.pageSpeed?.desktop?.score || 0,
+        mobileScore: analysis.analysis?.technical?.pageSpeed?.mobile?.score || 0,
+        desktopScore: analysis.analysis?.technical?.pageSpeed?.desktop?.score || 0,
         date: analysis.createdAt,
-        coreWebVitals: analysis.pageSpeed?.mobile?.coreWebVitals ? {
-          lcp: analysis.pageSpeed.mobile.coreWebVitals.largestContentfulPaint?.value || 0,
-          fid: analysis.pageSpeed.mobile.coreWebVitals.firstInputDelay?.value || 0,
-          cls: analysis.pageSpeed.mobile.coreWebVitals.cumulativeLayoutShift?.value || 0
+        coreWebVitals: analysis.analysis?.technical?.pageSpeed?.mobile?.coreWebVitals ? {
+          lcp: analysis.analysis.technical.pageSpeed.mobile.coreWebVitals.largestContentfulPaint?.value || 0,
+          fid: analysis.analysis.technical.pageSpeed.mobile.coreWebVitals.firstInputDelay?.value || 0,
+          cls: analysis.analysis.technical.pageSpeed.mobile.coreWebVitals.cumulativeLayoutShift?.value || 0
         } : null
       }));
     } catch (error) {
@@ -227,19 +227,19 @@ class DashboardService {
       recentAnalyses.forEach(analysis => {
         if (analysis.score) seoSum += analysis.score;
         
-        if (analysis.pageSpeed?.mobile?.score) {
-          mobileSum += analysis.pageSpeed.mobile.score;
+        if (analysis.analysis?.technical?.pageSpeed?.mobile?.score) {
+          mobileSum += analysis.analysis.technical.pageSpeed.mobile.score;
           mobileCount++;
         }
         
-        if (analysis.pageSpeed?.desktop?.score) {
-          desktopSum += analysis.pageSpeed.desktop.score;
+        if (analysis.analysis?.technical?.pageSpeed?.desktop?.score) {
+          desktopSum += analysis.analysis.technical.pageSpeed.desktop.score;
           desktopCount++;
         }
 
         // Core Web Vitals
-        if (analysis.pageSpeed?.mobile?.coreWebVitals) {
-          const cwv = analysis.pageSpeed.mobile.coreWebVitals;
+        if (analysis.analysis?.technical?.pageSpeed?.mobile?.coreWebVitals) {
+          const cwv = analysis.analysis.technical.pageSpeed.mobile.coreWebVitals;
           if (cwv.largestContentfulPaint?.value) {
             lcpSum += cwv.largestContentfulPaint.value;
             cwvCount++;
