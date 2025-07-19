@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme, isDark } = useTheme();
 
   const navigation = [
     { name: 'Dashboard', path: '/dashboard', icon: (
@@ -52,7 +54,7 @@ const Sidebar = () => {
       )}
 
       {/* Modern Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-40 w-72 bg-white/95 backdrop-blur-xl border-r border-indigo-100/50 shadow-2xl transform transition-all duration-500 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:shadow-xl ${
+      <div className={`fixed inset-y-0 left-0 z-40 w-72 sidebar-container border-r shadow-2xl transform transition-all duration-500 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:shadow-xl ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         {/* Sidebar Content */}
@@ -88,23 +90,63 @@ const Sidebar = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-blue-500/20 rounded-t-lg"></div>
           </div>
 
-          {/* User Profile Section */}
-          <div className="relative px-4 py-4 border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50/50 to-blue-50/30">
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                {/* User Avatar with glow */}
-                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg ring-2 ring-indigo-200/50">
-                  <span className="text-white font-bold text-sm">
-                    {user?.name?.[0] || 'U'}
-                  </span>
+          {/* User Profile Section with Theme Toggle */}
+          <div className="relative px-4 py-4 border-b sidebar-text-muted user-profile-section" style={{ borderColor: 'var(--sidebar-border)' }}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  {/* User Avatar with glow */}
+                  <div className="h-10 w-10 rounded-lg user-avatar flex items-center justify-center shadow-lg">
+                    <span className="user-avatar-text font-bold text-sm">
+                      {user?.name?.[0] || 'U'}
+                    </span>
+                  </div>
+                  {/* Online indicator */}
+                  <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 user-online-indicator shadow-sm"></div>
                 </div>
-                {/* Online indicator */}
-                <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold sidebar-text truncate">{user?.name || 'User'}</p>
+                  <p className="text-xs sidebar-text-muted truncate">{user?.email}</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-800 truncate">{user?.name || 'User'}</p>
-                <p className="text-xs text-indigo-600/70 truncate">{user?.email}</p>
-              </div>
+              
+              {/* Theme Toggle Button */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg glass-effect neon-border relative overflow-hidden group hover:scale-105 transition-transform duration-300"
+                title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+              >
+                <div
+                  className="w-4 h-4 relative transition-transform duration-300"
+                  style={{ transform: isDark ? 'rotate(0deg)' : 'rotate(180deg)' }}
+                >
+                  {isDark ? (
+                    // Sun icon for dark mode (switch to light)
+                    <svg
+                      className="w-4 h-4"
+                      style={{ color: 'var(--electric-cyan)' }}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  ) : (
+                    // Moon icon for light mode (switch to dark)
+                    <svg
+                      className="w-4 h-4"
+                      style={{ color: 'var(--electric-cyan)' }}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                    </svg>
+                  )}
+                </div>
+              </button>
             </div>
           </div>
 
@@ -117,8 +159,8 @@ const Sidebar = () => {
                 onClick={() => setIsOpen(false)}
                 className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-300 relative overflow-hidden ${
                   location.pathname === item.path
-                    ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg transform scale-105'
-                    : 'text-gray-700 hover:bg-indigo-50/70 hover:text-indigo-700 hover:scale-105'
+                    ? 'sidebar-nav-item active shadow-lg transform scale-105'
+                    : 'sidebar-nav-item hover:scale-105'
                 }`}
                 style={{
                   animationDelay: `${index * 100}ms`
@@ -145,22 +187,33 @@ const Sidebar = () => {
                 )}
               </Link>
             ))}
-          </nav>
-
-          {/* Logout Section */}
-          <div className="relative p-4 border-t border-indigo-100/50 bg-gradient-to-r from-red-50/30 to-pink-50/20">
+            
+            {/* Logout Button */}
             <button
               onClick={logout}
-              className="w-full flex items-center px-4 py-3 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50/70 hover:text-red-700 transition-all duration-300 group hover:scale-105 shadow-sm hover:shadow-md"
+              className="w-full group flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-lg logout-button hover:text-red-700 transition-all duration-300 hover:scale-105 mt-2"
+              style={{
+                animationDelay: `${navigation.length * 100}ms`
+              }}
             >
-              <svg className="w-5 h-5 mr-4 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span className="relative z-10">Logout</span>
+              <div className="relative transition-transform duration-300 group-hover:scale-110">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </div>
+              <span className="ml-3 relative z-10">Logout</span>
             </button>
-          </div>
+          </nav>
         </div>
       </div>
+
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
     </>
   );
 };

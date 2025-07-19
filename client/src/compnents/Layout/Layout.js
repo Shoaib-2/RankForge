@@ -3,7 +3,7 @@ import Sidebar from './Sidebar';
 
 const Layout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen dashboard-bg flex">
       {/* Modern Sidebar */}
       <Sidebar />
       
