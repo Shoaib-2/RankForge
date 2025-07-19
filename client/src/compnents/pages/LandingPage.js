@@ -202,40 +202,40 @@ const LandingPage = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto">
             <FadeInView delay={0.1}>
               <InteractiveCard tiltStrength={2}>
-                <div className="p-4 sm:p-6 h-full rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
+                <div className="p-4 sm:p-6 h-full rounded-xl feature-card-blue">
                   <div className="text-2xl sm:text-3xl mb-3 sm:mb-4">⚡</div>
-                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-blue-300">Circuit Breaker Protection</h3>
-                  <p className="text-sm text-gray-300">Advanced API quota management with automatic failover to prevent cost overruns</p>
+                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 feature-header-blue">Circuit Breaker Protection</h3>
+                  <p className="text-sm feature-card-text">Advanced API quota management with automatic failover to prevent cost overruns</p>
                 </div>
               </InteractiveCard>
             </FadeInView>
             
             <FadeInView delay={0.2}>
               <InteractiveCard tiltStrength={2}>
-                <div className="p-4 sm:p-6 h-full rounded-xl bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20">
+                <div className="p-4 sm:p-6 h-full rounded-xl feature-card-green">
                   <div className="text-2xl sm:text-3xl mb-3 sm:mb-4">💾</div>
-                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-green-300">Smart Caching System</h3>
-                  <p className="text-sm text-gray-300">15-minute intelligent caching eliminates redundant API calls and accelerates response times</p>
+                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 feature-header-green">Smart Caching System</h3>
+                  <p className="text-sm feature-card-text">15-minute intelligent caching eliminates redundant API calls and accelerates response times</p>
                 </div>
               </InteractiveCard>
             </FadeInView>
             
             <FadeInView delay={0.3}>
               <InteractiveCard tiltStrength={2}>
-                <div className="p-4 sm:p-6 h-full rounded-xl bg-gradient-to-br from-purple-500/10 to-violet-500/10 border border-purple-500/20">
+                <div className="p-4 sm:p-6 h-full rounded-xl feature-card-purple">
                   <div className="text-2xl sm:text-3xl mb-3 sm:mb-4">🚀</div>
-                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-purple-300">Batch Processing</h3>
-                  <p className="text-sm text-gray-300">Efficient bulk keyword tracking with progressive rate limiting and exponential backoff</p>
+                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 feature-header-purple">Batch Processing</h3>
+                  <p className="text-sm feature-card-text">Efficient bulk keyword tracking with progressive rate limiting and exponential backoff</p>
                 </div>
               </InteractiveCard>
             </FadeInView>
             
             <FadeInView delay={0.4}>
               <InteractiveCard tiltStrength={2}>
-                <div className="p-4 sm:p-6 h-full rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                <div className="p-4 sm:p-6 h-full rounded-xl feature-card-orange">
                   <div className="text-2xl sm:text-3xl mb-3 sm:mb-4">📈</div>
-                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-orange-300">Real-Time Rankings</h3>
-                  <p className="text-sm text-gray-300">Live Google search position tracking with domain matching and comprehensive SERP analysis</p>
+                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 feature-header-orange">Real-Time Rankings</h3>
+                  <p className="text-sm feature-card-text">Live Google search position tracking with domain matching and comprehensive SERP analysis</p>
                 </div>
               </InteractiveCard>
             </FadeInView>
@@ -264,21 +264,21 @@ const LandingPage = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
             <FadeInView delay={0.1}>
               <InteractiveCard tiltStrength={3}>
-                <div className="p-6 sm:p-8 h-full rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-600/30">
+                <div className="p-6 sm:p-8 h-full rounded-xl scale-card">
                   <div className="text-3xl sm:text-4xl mb-4 sm:mb-6 text-center">💰</div>
                   <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-center text-gradient-minimal">Cost Optimized</h3>
-                  <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
+                  <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base">
                     <li className="flex items-start gap-2">
-                      <span className="text-green-400 mt-1">✓</span>
-                      <span>Free tier API compliance</span>
+                      <span className="check-mark-green mt-1">✓</span>
+                      <span className="scale-card-text">Free tier API compliance</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-400 mt-1">✓</span>
-                      <span>Quota exhaustion prevention</span>
+                      <span className="check-mark-green mt-1">✓</span>
+                      <span className="scale-card-text">Quota exhaustion prevention</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-400 mt-1">✓</span>
-                      <span>Zero unexpected charges</span>
+                      <span className="check-mark-green mt-1">✓</span>
+                      <span className="scale-card-text">Zero unexpected charges</span>
                     </li>
                   </ul>
                 </div>
@@ -287,21 +287,21 @@ const LandingPage = () => {
             
             <FadeInView delay={0.2}>
               <InteractiveCard tiltStrength={3}>
-                <div className="p-6 sm:p-8 h-full rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-600/30">
+                <div className="p-6 sm:p-8 h-full rounded-xl scale-card">
                   <div className="text-3xl sm:text-4xl mb-4 sm:mb-6 text-center">🛡️</div>
                   <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-center text-gradient-minimal">Enterprise Reliable</h3>
-                  <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
+                  <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base">
                     <li className="flex items-start gap-2">
-                      <span className="text-blue-400 mt-1">✓</span>
-                      <span>Graceful error handling</span>
+                      <span className="check-mark-blue mt-1">✓</span>
+                      <span className="scale-card-text">Graceful error handling</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-blue-400 mt-1">✓</span>
-                      <span>Automatic failover systems</span>
+                      <span className="check-mark-blue mt-1">✓</span>
+                      <span className="scale-card-text">Automatic failover systems</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-blue-400 mt-1">✓</span>
-                      <span>99.9% uptime guarantee</span>
+                      <span className="check-mark-blue mt-1">✓</span>
+                      <span className="scale-card-text">99.9% uptime guarantee</span>
                     </li>
                   </ul>
                 </div>
@@ -310,21 +310,21 @@ const LandingPage = () => {
             
             <FadeInView delay={0.3} className="sm:col-span-2 lg:col-span-1">
               <InteractiveCard tiltStrength={3}>
-                <div className="p-6 sm:p-8 h-full rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-600/30">
+                <div className="p-6 sm:p-8 h-full rounded-xl scale-card">
                   <div className="text-3xl sm:text-4xl mb-4 sm:mb-6 text-center">⚡</div>
                   <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-center text-gradient-minimal">Lightning Fast</h3>
-                  <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
+                  <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base">
                     <li className="flex items-start gap-2">
-                      <span className="text-purple-400 mt-1">✓</span>
-                      <span>Sub-second response times</span>
+                      <span className="check-mark-purple mt-1">✓</span>
+                      <span className="scale-card-text">Sub-second response times</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-purple-400 mt-1">✓</span>
-                      <span>Database-first architecture</span>
+                      <span className="check-mark-purple mt-1">✓</span>
+                      <span className="scale-card-text">Database-first architecture</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-purple-400 mt-1">✓</span>
-                      <span>Intelligent request batching</span>
+                      <span className="check-mark-purple mt-1">✓</span>
+                      <span className="scale-card-text">Intelligent request batching</span>
                     </li>
                   </ul>
                 </div>
