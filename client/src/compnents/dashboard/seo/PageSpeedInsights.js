@@ -86,34 +86,34 @@ const PageSpeedInsights = ({ pageSpeedData }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6 flex items-center">
-        <RocketLaunchIcon className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
+      <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 lg:mb-8 flex items-center">
+        <RocketLaunchIcon className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 mr-2 sm:mr-3" />
         Page Speed Insights
       </h2>
 
       {/* Mobile/Desktop Tabs */}
       {hasMobile && hasDesktop && (
-        <div className="flex space-x-1 mb-4 sm:mb-6 bg-gray-100 p-1 rounded-lg">
+        <div className="flex space-x-1 mb-4 sm:mb-6 lg:mb-8 bg-gray-100 p-1 rounded-lg w-full sm:w-auto mx-auto sm:mx-0">
           <button
             onClick={() => setActiveTab('mobile')}
-            className={`flex items-center px-3 sm:px-4 py-2 rounded-md transition-colors text-sm ${
+            className={`flex items-center justify-center px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-md transition-colors text-sm sm:text-base flex-1 sm:flex-initial ${
               activeTab === 'mobile'
-                ? 'bg-white text-blue-600 shadow-sm'
+                ? 'bg-white text-blue-600 shadow-sm font-medium'
                 : 'text-gray-600 hover:text-gray-800'
             }`}
           >
-            <DevicePhoneMobileIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <DevicePhoneMobileIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2" />
             Mobile
           </button>
           <button
             onClick={() => setActiveTab('desktop')}
-            className={`flex items-center px-3 sm:px-4 py-2 rounded-md transition-colors text-sm ${
+            className={`flex items-center justify-center px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-md transition-colors text-sm sm:text-base flex-1 sm:flex-initial ${
               activeTab === 'desktop'
-                ? 'bg-white text-blue-600 shadow-sm'
+                ? 'bg-white text-blue-600 shadow-sm font-medium'
                 : 'text-gray-600 hover:text-gray-800'
             }`}
           >
-            <ComputerDesktopIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <ComputerDesktopIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2" />
             Desktop
           </button>
         </div>
@@ -145,101 +145,116 @@ const PageSpeedInsights = ({ pageSpeedData }) => {
 
       {/* Core Web Vitals */}
       {Object.keys(metrics).length > 0 ? (
-        <div className="page-speed-container mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8 lg:mb-10">
           {Object.entries(metrics).map(([key, data], index) => (
             <motion.div 
               key={key} 
-              className="stat-card"
+              className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 border border-gray-200 hover:border-gray-300 transition-all duration-300 hover:shadow-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ scale: 1.02 }}
             >
-              <div className="stat-card-icon" style={{ 
-                background: data.score >= 0.9 ? 'linear-gradient(135deg, #10b981, #059669)' :
-                           data.score >= 0.5 ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
-                           'linear-gradient(135deg, #ef4444, #dc2626)'
-              }}>
-                {getMetricIcon(key)}
-              </div>
-              <div className="stat-card-value">
-                {typeof data.value === 'number' ? 
-                  (data.value > 1 ? data.value.toFixed(1) : data.value.toFixed(3)) : 
-                  data.value}
-                <span className="text-xs sm:text-sm text-gray-500 ml-1">
-                  {key.includes('Time') || key.includes('Paint') || key.includes('Index') ? 
-                    (data.value > 1 ? 's' : 'ms') : 
-                    (key.includes('Shift') ? '' : 'ms')}
-                </span>
-              </div>
-              <div className="stat-card-label">{getMetricLabel(key)}</div>
-              <div className="mt-2">
-                <div className={`w-full h-2 rounded-full overflow-hidden ${
-                  data.score >= 0.9 ? 'bg-green-100' : data.score >= 0.5 ? 'bg-yellow-100' : 'bg-red-100'
-                }`}>
-                  <motion.div 
-                    className={`h-full ${
-                      data.score >= 0.9 ? 'bg-green-500' : data.score >= 0.5 ? 'bg-yellow-500' : 'bg-red-500'
-                    }`}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(data.score * 100)}%` }}
-                    transition={{ duration: 1, delay: index * 0.1 + 0.5 }}
-                  />
+              <div className="flex flex-col items-center text-center space-y-3 sm:space-y-4">
+                <div className="p-3 sm:p-4 rounded-full" style={{ 
+                  background: data.score >= 0.9 ? 'linear-gradient(135deg, #10b981, #059669)' :
+                             data.score >= 0.5 ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+                             'linear-gradient(135deg, #ef4444, #dc2626)'
+                }}>
+                  <div className="text-white">
+                    {getMetricIcon(key)}
+                  </div>
+                </div>
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+                    {typeof data.value === 'number' ? 
+                      (data.value > 1 ? data.value.toFixed(1) : data.value.toFixed(3)) : 
+                      data.value}
+                    <span className="text-xs sm:text-sm lg:text-base text-gray-500 ml-1">
+                      {key.includes('Time') || key.includes('Paint') || key.includes('Index') ? 
+                        (data.value > 1 ? 's' : 'ms') : 
+                        (key.includes('Shift') ? '' : 'ms')}
+                    </span>
+                  </div>
+                  <h4 className="text-sm sm:text-base lg:text-lg font-medium text-gray-700">{getMetricLabel(key)}</h4>
+                </div>
+                <div className="w-full">
+                  <div className={`w-full h-2 sm:h-3 rounded-full overflow-hidden ${
+                    data.score >= 0.9 ? 'bg-green-100' : data.score >= 0.5 ? 'bg-yellow-100' : 'bg-red-100'
+                  }`}>
+                    <motion.div 
+                      className={`h-full rounded-full ${
+                        data.score >= 0.9 ? 'bg-green-500' : data.score >= 0.5 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(data.score * 100)}%` }}
+                      transition={{ duration: 1, delay: index * 0.1 + 0.5 }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2">
+                    <span>Poor</span>
+                    <span>Good</span>
+                  </div>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-6 sm:py-8 mb-6 sm:mb-8">
-          <ClockIcon className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500 text-sm sm:text-base">Core Web Vitals data not available</p>
+        <div className="text-center py-6 sm:py-8 lg:py-10 mb-6 sm:mb-8 lg:mb-10">
+          <ClockIcon className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 text-gray-400 mx-auto mb-4 sm:mb-6" />
+          <p className="text-gray-500 text-sm sm:text-base lg:text-lg">Core Web Vitals data not available</p>
         </div>
       )}
 
-      {/* Recommendations */}
+      {/* Speed Optimization Tips */}
       {recommendations && recommendations.length > 0 && (
         <div>
-          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
-            <LightBulbIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+          <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-800 mb-3 sm:mb-4 lg:mb-6 flex items-center">
+            <LightBulbIcon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 mr-2 sm:mr-3" />
             Speed Optimization Tips ({recommendations.length})
           </h3>
-          <div className="analysis-results">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {recommendations.map((rec, index) => (
               <motion.div
                 key={index}
-                className="analysis-item"
+                className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 border border-gray-200 hover:border-gray-300 transition-all duration-300 hover:shadow-lg"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
               >
-                <div className="flex items-start gap-3">
-                  <div className={`score-badge ${
-                    rec.impact === 'high' ? 'score-poor' : 'score-good'
-                  }`}>
-                    {rec.impact === 'high' ? <ExclamationTriangleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" /> : <BoltIcon className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
-                      <span className="font-semibold text-gray-800 text-sm sm:text-base">{rec.title}</span>
-                      <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold w-fit ${
-                        rec.impact === 'high' 
-                          ? 'bg-red-100 text-red-700' 
-                          : rec.impact === 'medium'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-green-100 text-green-700'
+                <div className="flex flex-col space-y-3 sm:space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className={`p-2 sm:p-3 rounded-lg ${
+                        rec.impact === 'high' ? 'bg-red-50' : rec.impact === 'medium' ? 'bg-yellow-50' : 'bg-green-50'
                       }`}>
-                        {rec.impact?.toUpperCase() || 'LOW'} IMPACT
-                      </span>
+                        {rec.impact === 'high' ? 
+                          <ExclamationTriangleIcon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-red-500" /> : 
+                          <BoltIcon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-yellow-500" />
+                        }
+                      </div>
+                      <span className="font-semibold text-gray-800 text-sm sm:text-base lg:text-lg">{rec.title}</span>
                     </div>
-                    <p className="text-gray-600 text-sm sm:text-base mb-2">{rec.description}</p>
-                    {rec.potentialSavings && (
-                      <p className="text-xs sm:text-sm text-blue-600">
-                        Potential savings: {rec.potentialSavings}
-                      </p>
-                    )}
+                    <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap ${
+                      rec.impact === 'high' 
+                        ? 'bg-red-100 text-red-700' 
+                        : rec.impact === 'medium'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-green-100 text-green-700'
+                    }`}>
+                      {rec.impact?.toUpperCase() || 'LOW'} IMPACT
+                    </span>
                   </div>
+                  <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed">{rec.description}</p>
+                  {rec.potentialSavings && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                      <p className="text-xs sm:text-sm lg:text-base text-blue-700 font-medium">
+                        💡 Potential savings: {rec.potentialSavings}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}

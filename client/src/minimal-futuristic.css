@@ -630,7 +630,35 @@
   color: #2563eb;
 }
 
-/* Responsive Design */
+/* Enhanced Responsive Design */
+@media (max-width: 480px) {
+  .bg-grid-pattern {
+    background-size: 30px 30px;
+  }
+  
+  .export-card {
+    padding: 0.75rem;
+  }
+  
+  .export-option-card {
+    padding: 0.75rem;
+  }
+  
+  .recommendation-card {
+    padding: 0.75rem;
+  }
+  
+  .email-form {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .export-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
 @media (max-width: 768px) {
   .bg-grid-pattern {
     background-size: 50px 50px;
@@ -643,4 +671,303 @@
   .email-form {
     flex-direction: column;
   }
+  
+  /* Enhanced mobile spacing */
+  .seo-analysis-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .analysis-results {
+    gap: 1rem;
+  }
+}
+
+/* Additional responsive utilities */
+@media (min-width: 1280px) {
+  .recommendations-grid {
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 2rem;
+  }
+  
+  .export-card {
+    padding: 2rem;
+  }
+  
+  .export-option-card {
+    padding: 2rem;
+  }
+}
+
+/* Keyword Tracker Responsive Styles - Mobile First */
+.keyword-tracker {
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.keyword-tracker * {
+  box-sizing: border-box;
+}
+
+.keyword-tracker .keyword-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .keyword-tracker .keyword-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.keyword-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .keyword-card {
+    padding: 1.5rem;
+  }
+}
+
+.keyword-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: #d1d5db;
+  transform: translateY(-2px);
+}
+
+.keyword-suggestions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .keyword-suggestions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .keyword-suggestions {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.suggestion-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .suggestion-card {
+    padding: 1rem;
+  }
+}
+
+.suggestion-card:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.rate-limit-tracker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .rate-limit-tracker {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
+.rate-limit-bar {
+  width: 100%;
+  max-width: 200px;
+  height: 0.5rem;
+  background: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+/* Enhanced keyword metrics display */
+.keyword-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .keyword-metrics {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+}
+
+.metric-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Chart responsiveness helpers */
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  min-height: 192px; /* 12rem = 192px for mobile */
+}
+
+@media (min-width: 640px) {
+  .chart-container {
+    min-height: 224px; /* 14rem = 224px for tablet+ */
+  }
+}
+
+/* Touch-friendly targets on mobile */
+@media (max-width: 768px) {
+  .keyword-card button,
+  .suggestion-card,
+  .export-card {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .keyword-form input,
+  .keyword-form button {
+    min-height: 48px;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Larger touch targets for icons */
+  .keyword-card .icon-button {
+    padding: 0.75rem;
+  }
+  
+  /* Ensure no horizontal overflow on mobile */
+  .keyword-tracker,
+  .keyword-tracker * {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Force text truncation on very small screens */
+  .keyword-tracker h1,
+  .keyword-tracker h2,
+  .keyword-tracker h3 {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+}
+
+/* Ultra-wide screen support */
+@media (min-width: 1536px) {
+  .recommendations-grid {
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 2.5rem;
+  }
+}
+
+/* Mobile-first responsive utilities */
+.mobile-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .mobile-stack {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.responsive-text {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-text {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-text {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+}
+
+/* Enhanced touch targets for mobile */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive spacing utilities */
+.responsive-padding {
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-padding {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-padding {
+    padding: 2rem;
+  }
+}
+
+/* Mobile navigation helpers */
+.mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-scroll::-webkit-scrollbar {
+  display: none;
 }
