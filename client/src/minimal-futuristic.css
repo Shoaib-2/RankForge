@@ -703,6 +703,7 @@
   transition: all 0.3s ease;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
   overflow-x: hidden;
 }
 
@@ -731,6 +732,7 @@
   transition: all 0.3s ease;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
   overflow: hidden;
 }
 

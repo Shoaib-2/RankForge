@@ -21,6 +21,15 @@ import {
 } from '@heroicons/react/24/outline';
 
 const KeywordTracker = () => {
+  // Remove horizontal scrollbar on initial render
+  useEffect(() => {
+    document.documentElement.style.overflowX = 'hidden';
+    document.body.style.overflowX = 'hidden';
+    return () => {
+      document.documentElement.style.overflowX = '';
+      document.body.style.overflowX = '';
+    };
+  }, []);
   const [keywords, setKeywords] = useState([]);
   const [newKeyword, setNewKeyword] = useState('');
   const [domain, setDomain] = useState('');
@@ -29,6 +38,7 @@ const KeywordTracker = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(5); // Pagination: number of keywords to show
   
   // Use centralized rate limit state from SEO context
   const {
@@ -226,11 +236,16 @@ const KeywordTracker = () => {
     }));
   };
 
+  // Handler for loading more keywords
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => Math.min(prev + 5, keywords.length));
+  };
+
   return (
-    <div className="w-full max-w-full overflow-x-hidden space-y-6">
+    <div className="w-full max-w-full min-h-screen space-y-6 overflow-x-hidden overscroll-x-none" style={{width: '100vw'}}>
       {/* Enhanced Add Keyword Form */}
       <motion.div 
-        className="keyword-tracker bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm w-full max-w-full"
+        className="keyword-tracker bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm w-full max-w-full overflow-x-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -479,7 +494,7 @@ const KeywordTracker = () => {
 
       {/* Keywords List */}
       <motion.div 
-        className="keyword-tracker bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm w-full max-w-full overflow-hidden"
+        className="keyword-tracker bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm w-full max-w-full overflow-x-hidden overflow-hidden"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
@@ -488,7 +503,6 @@ const KeywordTracker = () => {
           <ChartBarIcon className="w-5 h-5 mr-2 flex-shrink-0" />
           <span className="truncate">Tracked Keywords ({keywords.length})</span>
         </h2>
-        
         {keywords.length === 0 ? (
           <div className="text-center py-12">
             <FlagIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -496,16 +510,17 @@ const KeywordTracker = () => {
             <p className="text-gray-500 text-sm">Add your first keyword to start tracking rankings</p>
           </div>
         ) : (
-          <div className="space-y-6 w-full">
-            {keywords.map((keyword, index) => (
-              <motion.div
-                key={keyword._id}
-                className="relative bg-gray-50 rounded-xl p-4 sm:p-6 border border-gray-200 hover:border-gray-300 transition-all duration-300 hover:shadow-lg w-full max-w-full overflow-hidden"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <div className="absolute top-4 right-4">
+          <>
+            <div className="space-y-6 w-full">
+              {keywords.slice(0, visibleCount).map((keyword, index) => (
+                <motion.div
+                  key={keyword._id}
+                  className="relative bg-gray-50 rounded-xl p-4 sm:p-6 border border-gray-200 hover:border-gray-300 transition-all duration-300 hover:shadow-lg w-full max-w-full overflow-hidden"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <div className="absolute top-4 right-4">
                     <motion.button
                       onClick={() => deleteKeyword(keyword._id)}
                       className="p-3 text-red-500 bg-white border border-gray-200 rounded-full hover:bg-red-100 transition-colors shadow-md"
@@ -515,168 +530,180 @@ const KeywordTracker = () => {
                       <TrashIcon className="w-5 h-5" />
                     </motion.button>
                   </div>
-                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-4 gap-4 w-full">
-                  <div className="flex-1 min-w-0 pr-12">
-                    <h3 className="text-lg font-semibold text-gray-800 flex items-center mb-3">
-                      <MagnifyingGlassIcon className="w-5 h-5 mr-2 flex-shrink-0" />
-                      <span className="truncate">{keyword.keyword}</span>
-                    </h3>
-                    {keyword.domain && (
-                      <p className="text-sm text-gray-600 mb-3 truncate">Domain: {keyword.domain}</p>
-                    )}
-                    
-                    {/* Enhanced Keyword Metrics */}
-                    <div className="flex flex-wrap gap-2 sm:gap-3 w-full">
-                      <div className="flex items-center bg-blue-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
-                        <span className="text-xs font-medium text-blue-700">
-                          Vol: {keyword.searchVolume?.toLocaleString() || 'N/A'}
-                        </span>
-                      </div>
-                      <div className="flex items-center bg-purple-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
-                        <span className={`text-xs font-medium ${
-                          keyword.difficulty < 40 ? 'text-green-700' : 
-                          keyword.difficulty < 70 ? 'text-yellow-700' : 'text-red-700'
-                        }`}>
-                          Diff: {keyword.difficulty || 'N/A'}
-                        </span>
-                      </div>
-                      {keyword.analysis?.trend && (
-                        <div className={`flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full ${
-                          keyword.analysis.trend === 'improving' ? 'bg-green-50' :
-                          keyword.analysis.trend === 'declining' ? 'bg-red-50' : 'bg-gray-50'
-                        }`}>
-                          <ArrowTrendingUpIcon className={`w-3 h-3 mr-1 flex-shrink-0 ${
-                            keyword.analysis.trend === 'improving' ? 'text-green-600 rotate-0' :
-                            keyword.analysis.trend === 'declining' ? 'text-red-600 rotate-180' : 'text-gray-600'
-                          }`} />
-                          <span className={`text-xs font-medium ${
-                            keyword.analysis.trend === 'improving' ? 'text-green-700' :                            keyword.analysis.trend === 'declining' ? 'text-red-700' : 'text-gray-700'
-                          }`}>
-                            {keyword.analysis.trend}
+                  <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-4 gap-4 w-full">
+                    <div className="flex-1 min-w-0 pr-12">
+                      <h3 className="text-lg font-semibold text-gray-800 flex items-center mb-3">
+                        <MagnifyingGlassIcon className="w-5 h-5 mr-2 flex-shrink-0" />
+                        <span className="truncate">{keyword.keyword}</span>
+                      </h3>
+                      {keyword.domain && (
+                        <p className="text-sm text-gray-600 mb-3 truncate">Domain: {keyword.domain}</p>
+                      )}
+                      
+                      {/* Enhanced Keyword Metrics */}
+                      <div className="flex flex-wrap gap-2 sm:gap-3 w-full">
+                        <div className="flex items-center bg-blue-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
+                          <span className="text-xs font-medium text-blue-700">
+                            Vol: {keyword.searchVolume?.toLocaleString() || 'N/A'}
                           </span>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Current Position */}
-                <div className="mb-6 w-full">
-                  <div className="flex flex-wrap items-center justify-between mb-3 gap-2 w-full">
-                    <span className="text-sm font-medium text-gray-700">Current Position</span>
-                    <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 shadow-sm">
-                      <span className={`text-xl sm:text-2xl font-bold px-2 sm:px-3 py-1 sm:py-2 rounded-lg ${
-                        keyword.rankings[keyword.rankings.length - 1]?.position <= 3 ? 'text-green-600 bg-green-50' :
-                        keyword.rankings[keyword.rankings.length - 1]?.position <= 10 ? 'text-blue-600 bg-blue-50' :
-                        'text-gray-600 bg-gray-50'
-                      }`}>
-                        #{keyword.rankings[keyword.rankings.length - 1]?.position || 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Trendy Message */}
-                  {keyword.rankings[keyword.rankings.length - 1]?.trendyMessage && (
-                    <div className="mt-2 p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg">
-                      <p className="text-sm font-medium text-purple-800 flex items-center">
-                        <BoltIcon className="w-4 h-4 mr-2" />
-                        {keyword.rankings[keyword.rankings.length - 1].trendyMessage}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Ranking Chart */}
-                <div className="h-48 sm:h-56 mb-6 w-full overflow-hidden">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={formatRankingData(keyword.rankings)}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis 
-                        dataKey="day" 
-                        stroke="#9ca3af"
-                        tick={{ fill: '#6b7280', fontSize: 10 }}
-                        tickLine={{ stroke: '#e5e7eb' }}
-                      />
-                      <YAxis 
-                        stroke="#9ca3af"
-                        tick={{ fill: '#6b7280', fontSize: 10 }}
-                        tickLine={{ stroke: '#e5e7eb' }}
-                        domain={[1, 'dataMax + 5']}
-                        reversed={true}
-                      />
-                      <Tooltip 
-                        contentStyle={{
-                          backgroundColor: '#fff',
-                          border: '1px solid #ddd',
-                          borderRadius: '12px',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                          fontSize: '14px',
-                          padding: '12px'
-                        }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="position" 
-                        stroke="#3b82f6" 
-                        strokeWidth={3}
-                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                        activeDot={{ r: 6, fill: '#1d4ed8' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Competitors */}
-                {keyword.competitors && keyword.competitors.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="text-sm font-medium text-gray-700 mb-4">Top Competitors</h4>
-                    <div className="space-y-3">
-                      {keyword.competitors.slice(0, 3).map((competitor, idx) => (
-                        <div key={idx} className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-xl">
-                          <div className="flex items-center min-w-0 flex-1">
-                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold text-white mr-3 flex-shrink-0 ${
-                              competitor.position === 1 ? 'bg-yellow-500' :
-                              competitor.position === 2 ? 'bg-gray-400' :
-                              competitor.position === 3 ? 'bg-orange-500' : 'bg-blue-500'
+                        <div className="flex items-center bg-purple-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
+                          <span className={`text-xs font-medium ${
+                            keyword.difficulty < 40 ? 'text-green-700' : 
+                            keyword.difficulty < 70 ? 'text-yellow-700' : 'text-red-700'
+                          }`}>
+                            Diff: {keyword.difficulty || 'N/A'}
+                          </span>
+                        </div>
+                        {keyword.analysis?.trend && (
+                          <div className={`flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full ${
+                            keyword.analysis.trend === 'improving' ? 'bg-green-50' :
+                            keyword.analysis.trend === 'declining' ? 'bg-red-50' : 'bg-gray-50'
+                          }`}>
+                            <ArrowTrendingUpIcon className={`w-3 h-3 mr-1 flex-shrink-0 ${
+                              keyword.analysis.trend === 'improving' ? 'text-green-600 rotate-0' :
+                              keyword.analysis.trend === 'declining' ? 'text-red-600 rotate-180' : 'text-gray-600'
+                            }`} />
+                            <span className={`text-xs font-medium ${
+                              keyword.analysis.trend === 'improving' ? 'text-green-700' :                            keyword.analysis.trend === 'declining' ? 'text-red-700' : 'text-gray-700'
                             }`}>
-                              {competitor.position}
+                              {keyword.analysis.trend}
                             </span>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-gray-800 truncate">{competitor.domain}</p>
-                              {competitor.title && (
-                                <p className="text-xs text-gray-600 truncate">{competitor.title}</p>
-                              )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Current Position */}
+                  <div className="mb-6 w-full">
+                    <div className="flex flex-wrap items-center justify-between mb-3 gap-2 w-full">
+                      <span className="text-sm font-medium text-gray-700">Current Position</span>
+                      <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 shadow-sm">
+                        <span className={`text-xl sm:text-2xl font-bold px-2 sm:px-3 py-1 sm:py-2 rounded-lg ${
+                          keyword.rankings[keyword.rankings.length - 1]?.position <= 3 ? 'text-green-600 bg-green-50' :
+                          keyword.rankings[keyword.rankings.length - 1]?.position <= 10 ? 'text-blue-600 bg-blue-50' :
+                          'text-gray-600 bg-gray-50'
+                        }`}>
+                          #{keyword.rankings[keyword.rankings.length - 1]?.position || 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Trendy Message */}
+                    {keyword.rankings[keyword.rankings.length - 1]?.trendyMessage && (
+                      <div className="mt-2 p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg">
+                        <p className="text-sm font-medium text-purple-800 flex items-center">
+                          <BoltIcon className="w-4 h-4 mr-2" />
+                          {keyword.rankings[keyword.rankings.length - 1].trendyMessage}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Ranking Chart */}
+                  <div className="h-48 sm:h-56 mb-6 w-full overflow-hidden">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={formatRankingData(keyword.rankings)}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis 
+                          dataKey="day" 
+                          stroke="#9ca3af"
+                          tick={{ fill: '#6b7280', fontSize: 10 }}
+                          tickLine={{ stroke: '#e5e7eb' }}
+                        />
+                        <YAxis 
+                          stroke="#9ca3af"
+                          tick={{ fill: '#6b7280', fontSize: 10 }}
+                          tickLine={{ stroke: '#e5e7eb' }}
+                          domain={[1, 'dataMax + 5']}
+                          reversed={true}
+                        />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: '#fff',
+                            border: '1px solid #ddd',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                            fontSize: '14px',
+                            padding: '12px'
+                          }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="position" 
+                          stroke="#3b82f6" 
+                          strokeWidth={3}
+                          dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, fill: '#1d4ed8' }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Competitors */}
+                  {keyword.competitors && keyword.competitors.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="text-sm font-medium text-gray-700 mb-4">Top Competitors</h4>
+                      <div className="space-y-3">
+                        {keyword.competitors.slice(0, 3).map((competitor, idx) => (
+                          <div key={idx} className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-xl">
+                            <div className="flex items-center min-w-0 flex-1">
+                              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold text-white mr-3 flex-shrink-0 ${
+                                competitor.position === 1 ? 'bg-yellow-500' :
+                                competitor.position === 2 ? 'bg-gray-400' :
+                                competitor.position === 3 ? 'bg-orange-500' : 'bg-blue-500'
+                              }`}>
+                                {competitor.position}
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-gray-800 truncate">{competitor.domain}</p>
+                                {competitor.title && (
+                                  <p className="text-xs text-gray-600 truncate">{competitor.title}</p>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Opportunities */}
-                {keyword.analysis?.opportunities && keyword.analysis.opportunities.length > 0 && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                    <h4 className="text-sm font-medium text-yellow-800 mb-3 flex items-center">
-                      <LightBulbIcon className="w-4 h-4 mr-2" />
-                      SEO Opportunities
-                    </h4>
-                    <div className="space-y-2">
-                      {keyword.analysis.opportunities.map((opportunity, idx) => (
-                        <div key={idx} className="flex items-start">
-                          <FireIcon className={`w-4 h-4 mr-2 mt-0.5 flex-shrink-0 ${
-                            opportunity.priority === 'high' ? 'text-red-500' : 
-                            opportunity.priority === 'medium' ? 'text-yellow-500' : 'text-green-500'
-                          }`} />
-                          <p className="text-sm text-yellow-700">{opportunity.message}</p>
-                        </div>
-                      ))}
+                  {/* Opportunities */}
+                  {keyword.analysis?.opportunities && keyword.analysis.opportunities.length > 0 && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                      <h4 className="text-sm font-medium text-yellow-800 mb-3 flex items-center">
+                        <LightBulbIcon className="w-4 h-4 mr-2" />
+                        SEO Opportunities
+                      </h4>
+                      <div className="space-y-2">
+                        {keyword.analysis.opportunities.map((opportunity, idx) => (
+                          <div key={idx} className="flex items-start">
+                            <FireIcon className={`w-4 h-4 mr-2 mt-0.5 flex-shrink-0 ${
+                              opportunity.priority === 'high' ? 'text-red-500' : 
+                              opportunity.priority === 'medium' ? 'text-yellow-500' : 'text-green-500'
+                            }`} />
+                            <p className="text-sm text-yellow-700">{opportunity.message}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+            {/* Load More Button for pagination */}
+            {visibleCount < keywords.length && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={handleLoadMore}
+                  className="futuristic-button px-6 py-3 text-sm font-medium bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors"
+                >
+                  Load More
+                </button>
+              </div>
+            )}
+          </>
         )}
       </motion.div>
     </div>
