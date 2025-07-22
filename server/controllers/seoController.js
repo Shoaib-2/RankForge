@@ -30,6 +30,19 @@ const seoController = {
         });
       }
 
+      // Check if this is a protected site
+      if (seoAnalyzer.isProtectedSite(url)) {
+        console.log('Protected site detected:', url);
+        const alternativeAnalysis = await seoAnalyzer.getAlternativeAnalysis(url);
+        
+        return res.json({
+          success: true,
+          data: alternativeAnalysis,
+          score: 50, // Neutral score for protected sites
+          message: 'Limited analysis available due to site protection'
+        });
+      }
+
       // Get complete analysis
       const analysisResults = await seoAnalyzer.analyzeContent(url);
       

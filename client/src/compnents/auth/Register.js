@@ -7,11 +7,14 @@ const Register = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     name: '',
     website: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { register } = useAuth();
 
@@ -32,8 +35,16 @@ const Register = () => {
       setError('Email is required');
       return false;
     }
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return false;
+    }
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(formData.password)) {
+      setError('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
       return false;
     }
     return true;
@@ -174,7 +185,9 @@ const Register = () => {
                   placeholder="Enter your full name"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <span className="text-cyan-400">👤</span>
+                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -213,7 +226,9 @@ const Register = () => {
                   placeholder="Enter your email"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <span className="text-cyan-400">📧</span>
+                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -251,29 +266,31 @@ const Register = () => {
                   placeholder="https://yourwebsite.com"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <span className="text-cyan-400">🌐</span>
+                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9-9a9 9 0 00-9 9m9 9v-9a9 9 0 00-9-9m9-9a9 9 0 019 9v9a9 9 0 01-9 9" />
+                  </svg>
                 </div>
               </div>
             </div>
 
-            {/* Password Field */}
+            {/* Create Password Field */}
             <div>
               <label 
                 htmlFor="password"
                 className="block text-sm font-medium mb-2"
                 style={{ color: 'var(--text-primary)' }}
               >
-                Password
+                Create Password
               </label>
               <div className="relative">
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border bg-transparent transition-all duration-300 focus:outline-none focus:ring-2"
+                  className="w-full px-4 py-3 pr-12 rounded-xl border bg-transparent transition-all duration-300 focus:outline-none focus:ring-2"
                   style={{
                     borderColor: 'rgba(0, 217, 255, 0.3)',
                     color: 'var(--text-primary)',
@@ -290,11 +307,89 @@ const Register = () => {
                   placeholder="Create a strong password"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <span className="text-cyan-400">🔒</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-cyan-400 hover:text-cyan-300 transition-colors duration-200 mr-2"
+                  >
+                    {showPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464M9.878 9.878c.6-.6 1.44-.896 2.122-.878m4.242 4.242l2.122-2.122m0 0l1.414-1.414M21.536 12c-1.275 4.057-5.065 7-9.536 7-1.18 0-2.318-.192-3.375-.545" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
                 </div>
               </div>
               <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-                Minimum 6 characters required
+                8+ characters with uppercase, lowercase, number & special character
+              </p>
+            </div>
+
+            {/* Confirm Password Field */}
+            <div>
+              <label 
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium mb-2"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 pr-12 rounded-xl border bg-transparent transition-all duration-300 focus:outline-none focus:ring-2"
+                  style={{
+                    borderColor: 'rgba(0, 217, 255, 0.3)',
+                    color: 'var(--text-primary)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'var(--electric-cyan)';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(0, 217, 255, 0.2)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(0, 217, 255, 0.3)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                  placeholder="Confirm your password"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="text-cyan-400 hover:text-cyan-300 transition-colors duration-200 mr-2"
+                  >
+                    {showConfirmPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464M9.878 9.878c.6-.6 1.44-.896 2.122-.878m4.242 4.242l2.122-2.122m0 0l1.414-1.414M21.536 12c-1.275 4.057-5.065 7-9.536 7-1.18 0-2.318-.192-3.375-.545" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                Must match the password above
               </p>
             </div>
 

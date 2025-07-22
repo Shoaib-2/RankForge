@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 import authService from '../services/authService';
 
 const AuthContext = createContext(null);
@@ -38,6 +38,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     authService.logout();
     setUser(null);
+    // Use window.location for immediate redirect to avoid race condition with ProtectedRoute
+    window.location.href = '/';
   };
 
   const value = {

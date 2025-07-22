@@ -24,6 +24,82 @@ class SeoAnalyzer {
       }
     };
   }
+
+  // Check if a URL is likely to be protected or problematic
+  isProtectedSite(url) {
+    const protectedDomains = [
+      'linkedin.com',
+      'indeed.com', 
+      'glassdoor.com',
+      'monster.com',
+      'jobsite.co.uk',
+      'cwjobs.co.uk',
+      'reed.co.uk',
+      'totaljobs.com',
+      'facebook.com',
+      'twitter.com',
+      'instagram.com',
+      'tiktok.com',
+      'netflix.com',
+      'amazon.com',
+      'ebay.com'
+    ];
+    
+    const domain = new URL(url).hostname.toLowerCase();
+    return protectedDomains.some(protectedDomain => domain.includes(protectedDomain));
+  }
+
+  // Provide alternative analysis for protected sites
+  async getAlternativeAnalysis(url) {
+    return {
+      url,
+      isProtected: true,
+      message: "This site uses anti-bot protection. Here's what we can analyze:",
+      basicChecks: {
+        ssl: await this.checkSSL(url),
+        domain: this.analyzeDomain(url),
+        publicInfo: this.getPublicSiteInfo(url)
+      },
+      recommendations: [
+        {
+          category: 'ANALYSIS_LIMITATION',
+          priority: 'INFO',
+          title: 'Protected Site Detected',
+          description: 'This website uses protection against automated analysis (Cloudflare, rate limiting, etc.)',
+          suggestion: 'For detailed SEO analysis of protected sites, consider: 1) Manual analysis, 2) Using the site\'s public APIs if available, 3) Analyzing less protected pages of the same domain'
+        }
+      ]
+    };
+  }
+
+  checkSSL(url) {
+    return url.startsWith('https://') ? 
+      { hasSSL: true, score: 100 } : 
+      { hasSSL: false, score: 0 };
+  }
+
+  analyzeDomain(url) {
+    const domain = new URL(url).hostname;
+    return {
+      domain,
+      isSubdomain: domain.split('.').length > 2,
+      tld: domain.split('.').pop()
+    };
+  }
+
+  getPublicSiteInfo(url) {
+    const domain = new URL(url).hostname;
+    return {
+      domain,
+      checkSuggestions: [
+        `Check ${domain} robots.txt: ${url}/robots.txt`,
+        `Check ${domain} sitemap: ${url}/sitemap.xml`,
+        `Use tools like GTmetrix or PageSpeed Insights manually`,
+        `Check domain authority on MOZ or similar tools`
+      ]
+    };
+  }
+  
   async analyzeContent(url) {
     try {
       console.log('Starting comprehensive SEO analysis for:', url);
@@ -35,11 +111,27 @@ class SeoAnalyzer {
         return cachedResult;
       }
 
-      // Fetch page content
+      // Enhanced headers to appear more like a real browser
+      const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Cache-Control': 'max-age=0'
+      };
+
+      // Fetch page content with enhanced configuration
       const response = await axios.get(url, {
-        timeout: 15000,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; SEO-Tool/1.0; +https://seo-tool.com)'
+        timeout: 30000, // Increased timeout to 30 seconds
+        maxRedirects: 5,
+        headers,
+        validateStatus: function (status) {
+          return status >= 200 && status < 400; // Accept redirects
         }
       });
       
@@ -84,7 +176,19 @@ class SeoAnalyzer {
       return result;
     } catch (error) {
       console.error('Error analyzing content:', error.message);
-      throw new Error(`Error analyzing content: ${error.message}`);
+      
+      // Handle specific error types with helpful messages
+      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        throw new Error(`Website analysis timed out. This site (${url}) may have anti-bot protection or be heavily protected against automated analysis. Try analyzing a different URL or the site's robots.txt might restrict access.`);
+      } else if (error.response?.status === 403) {
+        throw new Error(`Access denied (403). This site (${url}) blocks automated requests. Many job sites and large platforms use Cloudflare or similar protection.`);
+      } else if (error.response?.status === 429) {
+        throw new Error(`Rate limited (429). This site (${url}) is temporarily blocking requests due to high traffic. Please try again later.`);
+      } else if (error.response?.status >= 500) {
+        throw new Error(`Server error (${error.response.status}). The target website (${url}) is experiencing issues.`);
+      } else {
+        throw new Error(`Error analyzing content: ${error.message}`);
+      }
     }
   }
 
