@@ -20,6 +20,12 @@ class CacheService {
       checkperiod: 120,
       maxKeys: 200
     });
+
+    this.resetSessionCache = new NodeCache({ 
+      stdTTL: 1800, // 30 minutes for password reset sessions
+      checkperiod: 300,
+      maxKeys: 100
+    });
   }
 
   // SEO Analysis caching
@@ -109,6 +115,30 @@ class CacheService {
     } catch {
       return false;
     }
+  }
+
+  // Password Reset Session Management
+  createResetSession(email) {
+    const sessionToken = require('crypto').randomBytes(32).toString('hex');
+    const sessionKey = `reset_session:${email.toLowerCase()}`;
+    
+    this.resetSessionCache.set(sessionKey, {
+      token: sessionToken,
+      email: email.toLowerCase(),
+      createdAt: new Date()
+    });
+    
+    return sessionToken;
+  }
+
+  verifyResetSession(email) {
+    const sessionKey = `reset_session:${email.toLowerCase()}`;
+    return this.resetSessionCache.get(sessionKey);
+  }
+
+  clearResetSession(email) {
+    const sessionKey = `reset_session:${email.toLowerCase()}`;
+    this.resetSessionCache.del(sessionKey);
   }
 }
 

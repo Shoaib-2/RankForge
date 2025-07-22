@@ -45,6 +45,13 @@ router.post('/logout',
   authController.logout
 );
 
+router.post('/verify-reset-email', 
+  emailRateLimiter,
+  validationRules.verifyResetEmail,
+  handleValidationErrors,
+  authController.verifyResetEmail
+);
+
 router.post('/forgot-password', 
   emailRateLimiter,
   validationRules.forgotPassword,

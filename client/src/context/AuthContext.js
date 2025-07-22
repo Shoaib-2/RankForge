@@ -34,6 +34,11 @@ export const AuthProvider = ({ children }) => {
     return response;
   };
 
+  const verifyEmailForReset = async (email) => {
+    const response = await authService.verifyEmailForReset(email);
+    return response;
+  };
+
 
   const logout = () => {
     authService.logout();
@@ -48,6 +53,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     resetPassword,
+    verifyEmailForReset,
     loading
   };
 

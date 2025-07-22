@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const mongoose = require('mongoose');
 const { generateTokens, verifyRefreshToken } = require('../middleware/auth');
   const { AuthenticationError, ValidationError, asyncHandler } = require('../middleware/errorHandler');
 const { logger } = require('../utils/logger');
@@ -166,13 +167,76 @@ const authController = {
     }
   },
 
-  // Reset password
+  // Reset password email verification
+  async verifyResetEmail(req, res) {
+    try {
+      const { email } = req.body;
+      
+      // Check database connection
+      if (mongoose.connection.readyState !== 1) {
+        return res.status(503).json({ 
+          success: false,
+          message: 'Database connection unavailable. Please try again.' 
+        });
+      }
+      
+      const user = await User.findOne({ email: email.toLowerCase() });
+      if (!user) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'No account found with this email address' 
+        });
+      }
+
+      // Create a reset session
+      const cacheService = require('../services/cacheService');
+      const sessionToken = cacheService.createResetSession(email);
+      
+      console.log('Reset session created for:', email);
+
+      res.json({ 
+        success: true,
+        message: 'Email verified successfully',
+        sessionToken // We'll send this back to track the session
+      });
+    } catch (error) {
+      console.error('Email verification error:', error);
+      
+      // Handle specific database errors
+      if (error.name === 'MongoNetworkError' || error.code === 'ECONNRESET') {
+        return res.status(503).json({ 
+          success: false,
+          message: 'Database connection error. Please try again in a moment.' 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false,
+        message: 'Error verifying email address',
+        error: error.message 
+      });
+    }
+  },
+
   async forgotPassword(req, res) {
     try {
       const { email, newPassword } = req.body;
       
+      // Verify reset session exists
+      const cacheService = require('../services/cacheService');
+      const session = cacheService.verifyResetSession(email);
+      
+      if (!session) {
+        return res.status(403).json({ 
+          success: false,
+          message: 'Invalid or expired reset session. Please verify your email again.' 
+        });
+      }
+      
       const user = await User.findOne({ email: email.toLowerCase() });
       if (!user) {
+        // Clear the session if user doesn't exist
+        cacheService.clearResetSession(email);
         return res.status(404).json({ 
           success: false,
           message: 'User not found' 
@@ -183,6 +247,9 @@ const authController = {
       user.tokenVersion += 1; // Invalidate all existing tokens
       user.refreshToken = undefined; // Clear refresh token
       await user.save();
+      
+      // Clear the reset session after successful password change
+      cacheService.clearResetSession(email);
       
       console.log('Password updated successfully for:', email);
   

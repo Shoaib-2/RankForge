@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 
 const ForgotPassword = () => {
   const navigate = useNavigate(); 
-  const { resetPassword } = useAuth();
+  const { resetPassword, verifyEmailForReset } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     newPassword: '',
@@ -31,6 +31,17 @@ const ForgotPassword = () => {
     const hasNumber = /\d/.test(password);
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
+    // Debug logs to see which validation is failing
+    console.log('Password validation details:', {
+      length: password.length,
+      minLength: minLength,
+      hasUppercase,
+      hasLowercase,
+      hasNumber,
+      hasSpecialChar,
+      password: password.substring(0, 3) + '***' // Show first 3 chars for debugging
+    });
+
     return (
       password.length >= minLength &&
       hasUppercase &&
@@ -49,12 +60,11 @@ const ForgotPassword = () => {
     
     setIsLoading(true);
     try {
-      // Simulate sending reset email
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await verifyEmailForReset(formData.email);
       setStep('reset');
       setError('');
     } catch (err) {
-      setError('Unable to send reset email. Please try again.');
+      setError(err.response?.data?.message || 'Email not found or unable to process reset request');
     } finally {
       setIsLoading(false);
     }
@@ -62,28 +72,35 @@ const ForgotPassword = () => {
 
   const handleResetSubmit = async (e) => {
     e.preventDefault();
+    console.log('handleResetSubmit called'); // Debug log
     const { email, newPassword, confirmPassword } = formData;
+    console.log('Form data:', { email, newPassword: '***', confirmPassword: '***' }); // Debug log
 
     if (newPassword !== confirmPassword) {
+      console.log('Password mismatch error'); // Debug log
       setError('Passwords do not match');
       return;
     }
 
     if (!validatePassword(newPassword)) {
+      console.log('Password validation failed'); // Debug log
       setError(
         'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character'
       );
       return;
     }
 
+    console.log('About to call resetPassword'); // Debug log
     setIsLoading(true);
     try {
       await resetPassword({ email, newPassword });
+      console.log('Password reset successful'); // Debug log
       setSuccess(true);
       setTimeout(() => {
         navigate('/login');
       }, 2000);
     } catch (err) {
+      console.log('Password reset error:', err); // Debug log
       setError(err.response?.data?.message || 'An error occurred while resetting password');
     } finally {
       setIsLoading(false);
@@ -149,7 +166,7 @@ const ForgotPassword = () => {
               style={{ color: 'var(--text-secondary)' }}
             >
               {step === 'email' 
-                ? 'Enter your email to receive reset instructions'
+                ? 'Enter your registered email address to continue'
                 : 'Enter your new password below'
               }
             </p>
@@ -253,10 +270,10 @@ const ForgotPassword = () => {
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                     />
-                    Sending...
+                    Verifying...
                   </span>
                 ) : (
-                  'Send Reset Link'
+                  'Verify Email'
                 )}
               </motion.button>
             </motion.form>

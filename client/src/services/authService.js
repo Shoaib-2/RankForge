@@ -116,6 +116,13 @@ const authService = {
     }
   },
 
+  async verifyEmailForReset(email) {
+    const response = await axios.post(`${API_URL}/auth/verify-reset-email`, {
+      email
+    });
+    return response.data;
+  },
+
   async resetPassword({ email, newPassword }) {
     const response = await axios.post(`${API_URL}/auth/forgot-password`, {
       email,
