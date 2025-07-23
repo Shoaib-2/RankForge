@@ -6,10 +6,10 @@ const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     
-    console.log('Auth middleware - Authorization header:', authHeader ? 'Present' : 'Missing');
+    // console.log('Auth middleware - Authorization header:', authHeader ? 'Present' : 'Missing');
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('Auth middleware - Invalid or missing Bearer token');
+      // console.log('Auth middleware - Invalid or missing Bearer token');
       return res.status(401).json({ 
         success: false,
         message: 'Authentication required. Please provide a valid token.' 
@@ -19,7 +19,7 @@ const authMiddleware = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
     
     if (!token) {
-      console.log('Auth middleware - Token extraction failed');
+      // console.log('Auth middleware - Token extraction failed');
       return res.status(401).json({ 
         success: false,
         message: 'Authentication token not found' 
@@ -28,13 +28,13 @@ const authMiddleware = async (req, res, next) => {
 
     // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Auth middleware - Token decoded successfully for user:', decoded.userId);
+    // console.log('Auth middleware - Token decoded successfully for user:', decoded.userId);
     
     // Additional security: Check if user still exists and token version matches
     const user = await User.findById(decoded.userId).select('-password -refreshToken');
     
     if (!user) {
-      console.log('Auth middleware - User not found:', decoded.userId);
+      // console.log('Auth middleware - User not found:', decoded.userId);
       return res.status(401).json({ 
         success: false,
         message: 'User account no longer exists' 
@@ -43,14 +43,14 @@ const authMiddleware = async (req, res, next) => {
 
     // Check token version for security (allows invalidating all tokens)
     if (decoded.tokenVersion !== user.tokenVersion) {
-      console.log('Auth middleware - Token version mismatch. Expected:', user.tokenVersion, 'Got:', decoded.tokenVersion);
+      // console.log('Auth middleware - Token version mismatch. Expected:', user.tokenVersion, 'Got:', decoded.tokenVersion);
       return res.status(401).json({ 
         success: false,
         message: 'Token is no longer valid. Please login again.' 
       });
     }
 
-    console.log('Auth middleware - Authentication successful for user:', user.email);
+    // console.log('Auth middleware - Authentication successful for user:', user.email);
     // Add user info to request
     req.userId = decoded.userId;
     req.user = user;

@@ -32,15 +32,15 @@ const ForgotPassword = () => {
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
     // Debug logs to see which validation is failing
-    console.log('Password validation details:', {
-      length: password.length,
-      minLength: minLength,
-      hasUppercase,
-      hasLowercase,
-      hasNumber,
-      hasSpecialChar,
-      password: password.substring(0, 3) + '***' // Show first 3 chars for debugging
-    });
+    // console.log('Password validation details:', {
+    //   length: password.length,
+    //   minLength: minLength,
+    //   hasUppercase,
+    //   hasLowercase,
+    //   hasNumber,
+    //   hasSpecialChar,
+    //   password: password.substring(0, 3) + '***' // Show first 3 chars for debugging
+    // });
 
     return (
       password.length >= minLength &&
@@ -72,35 +72,35 @@ const ForgotPassword = () => {
 
   const handleResetSubmit = async (e) => {
     e.preventDefault();
-    console.log('handleResetSubmit called'); // Debug log
+    // console.log('handleResetSubmit called'); // Debug log
     const { email, newPassword, confirmPassword } = formData;
-    console.log('Form data:', { email, newPassword: '***', confirmPassword: '***' }); // Debug log
+    // console.log('Form data:', { email, newPassword: '***', confirmPassword: '***' }); // Debug log
 
     if (newPassword !== confirmPassword) {
-      console.log('Password mismatch error'); // Debug log
+      // console.log('Password mismatch error'); // Debug log
       setError('Passwords do not match');
       return;
     }
 
     if (!validatePassword(newPassword)) {
-      console.log('Password validation failed'); // Debug log
+      // console.log('Password validation failed'); // Debug log
       setError(
         'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character'
       );
       return;
     }
 
-    console.log('About to call resetPassword'); // Debug log
+    // console.log('About to call resetPassword'); // Debug log
     setIsLoading(true);
     try {
       await resetPassword({ email, newPassword });
-      console.log('Password reset successful'); // Debug log
+      // console.log('Password reset successful'); // Debug log
       setSuccess(true);
       setTimeout(() => {
         navigate('/login');
       }, 2000);
     } catch (err) {
-      console.log('Password reset error:', err); // Debug log
+      // console.log('Password reset error:', err); // Debug log
       setError(err.response?.data?.message || 'An error occurred while resetting password');
     } finally {
       setIsLoading(false);

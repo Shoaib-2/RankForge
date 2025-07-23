@@ -6,7 +6,7 @@ const fs = require('fs');
 
 router.post('/pdf', authMiddleware, async (req, res) => {
     try {
-        console.log('Received data:', req.body); 
+        // console.log('Received data:', req.body); 
         if (!req.body.analysisData) {
             return res.status(400).json({ message: 'Analysis data is required' });
         }
@@ -24,7 +24,7 @@ router.post('/pdf', authMiddleware, async (req, res) => {
 
 router.post('/csv', authMiddleware, async (req, res) => {
     try {
-        console.log('Received data:', req.body);
+        // console.log('Received data:', req.body);
         if (!req.body.analysisData) {
             return res.status(400).json({ message: 'Analysis data is required' });
         }
@@ -49,7 +49,7 @@ router.post('/csv', authMiddleware, async (req, res) => {
 // Excel Export
 router.post('/excel', authMiddleware, async (req, res) => {
     try {
-        console.log('Received data:', req.body);
+        // console.log('Received data:', req.body);
         if (!req.body.analysisData) {
             return res.status(400).json({ message: 'Analysis data is required' });
         }
@@ -74,7 +74,7 @@ router.post('/excel', authMiddleware, async (req, res) => {
 // JSON Export
 router.post('/json', authMiddleware, async (req, res) => {
     try {
-        console.log('Received data:', req.body);
+        // console.log('Received data:', req.body);
         if (!req.body.analysisData) {
             return res.status(400).json({ message: 'Analysis data is required' });
         }
@@ -91,7 +91,7 @@ router.post('/json', authMiddleware, async (req, res) => {
 // Email Export
 router.post('/email-report', authMiddleware, async (req, res) => {
     try {
-        console.log('Received data:', req.body);
+        // console.log('Received data:', req.body);
         const { email, analysisData } = req.body;
         if (!email || !analysisData) {
             return res.status(400).json({ message: 'Email and analysis data are required' });

@@ -14,7 +14,7 @@ const keywordController = {
         return res.status(400).json({ message: 'Keyword already being tracked' });
       }
 
-      console.log(`Adding keyword tracking for: ${keyword}, domain: ${domain || 'none'}`);
+      // console.log(`Adding keyword tracking for: ${keyword}, domain: ${domain || 'none'}`);
 
       // Get real keyword ranking data with force refresh to ensure fresh competitor data
       const rankingData = await keywordService.trackKeywordRanking(keyword, domain || 'example.com', { forceRefresh: true });
@@ -143,7 +143,7 @@ const keywordController = {
         };
       });
       
-      console.log(`📊 Loaded ${enhancedKeywords.length} keywords from database (no API calls)`);
+      // console.log(`📊 Loaded ${enhancedKeywords.length} keywords from database (no API calls)`);
       res.json(enhancedKeywords);
     } catch (error) {
       console.error('Error fetching keywords:', error);
@@ -159,7 +159,7 @@ const keywordController = {
         return res.status(400).json({ message: 'Seed keyword is required' });
       }
 
-      console.log(`Generating keyword suggestions for: ${seedKeyword}`);
+      // console.log(`Generating keyword suggestions for: ${seedKeyword}`);
       
       const suggestions = await keywordService.generateKeywordSuggestions(seedKeyword, domain);
       
@@ -209,7 +209,7 @@ const keywordController = {
         return res.status(404).json({ message: 'Keyword not found' });
       }
 
-      console.log(`🔄 User explicitly requested ranking refresh for keyword: ${keyword.keyword}`);
+      // console.log(`🔄 User explicitly requested ranking refresh for keyword: ${keyword.keyword}`);
       
       // Only make API call when user explicitly requests refresh - use force refresh for fresh data
       const newRanking = await keywordService.trackKeywordRanking(
@@ -341,7 +341,7 @@ const keywordController = {
         return res.status(400).json({ message: 'Keywords array is required' });
       }
 
-      console.log(`🔄 Batch tracking ${keywords.length} keywords for user ${userId}`);
+      // console.log(`🔄 Batch tracking ${keywords.length} keywords for user ${userId}`);
 
       // Use the optimized batch tracking service
       const trackingResults = await keywordService.batchTrackKeywords(keywords, domain, maxConcurrent);
@@ -353,7 +353,7 @@ const keywordController = {
           // Check if keyword already exists
           const existingKeyword = await Keyword.findOne({ userId, keyword: rankingData.keyword });
           if (existingKeyword) {
-            console.log(`⚠️  Keyword "${rankingData.keyword}" already being tracked, skipping`);
+            // console.log(`⚠️  Keyword "${rankingData.keyword}" already being tracked, skipping`);
             continue;
           }
 
@@ -392,7 +392,7 @@ const keywordController = {
 
           await newKeyword.save();
           savedKeywords.push(newKeyword);
-          console.log(`✅ Saved keyword tracking: ${rankingData.keyword}`);
+          // console.log(`✅ Saved keyword tracking: ${rankingData.keyword}`);
         } catch (error) {
           console.error(`❌ Error saving keyword "${rankingData.keyword}":`, error.message);
         }

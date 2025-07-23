@@ -192,7 +192,7 @@ const authController = {
       const cacheService = require('../services/cacheService');
       const sessionToken = cacheService.createResetSession(email);
       
-      console.log('Reset session created for:', email);
+      // console.log('Reset session created for:', email);
 
       res.json({ 
         success: true,
@@ -251,7 +251,7 @@ const authController = {
       // Clear the reset session after successful password change
       cacheService.clearResetSession(email);
       
-      console.log('Password updated successfully for:', email);
+      // console.log('Password updated successfully for:', email);
   
       res.json({ 
         success: true,

@@ -130,8 +130,8 @@ const handleValidationErrors = (req, res, next) => {
       value: error.value
     }));
 
-    console.log('Validation errors:', formattedErrors);
-    console.log('Request body:', req.body);
+    // console.log('Validation errors:', formattedErrors);
+    // console.log('Request body:', req.body);
 
     return res.status(400).json({
       success: false,

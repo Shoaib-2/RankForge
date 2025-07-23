@@ -32,7 +32,7 @@ const seoController = {
 
       // Check if this is a protected site
       if (seoAnalyzer.isProtectedSite(url)) {
-        console.log('Protected site detected:', url);
+        // console.log('Protected site detected:', url);
         const alternativeAnalysis = await seoAnalyzer.getAlternativeAnalysis(url);
         
         return res.json({
@@ -47,7 +47,7 @@ const seoController = {
       const analysisResults = await seoAnalyzer.analyzeContent(url);
       
       // Debug: Log the PageSpeed structure
-      console.log('PageSpeed Analysis Results:', JSON.stringify(analysisResults?.technicalAnalysis?.pageSpeed, null, 2));
+      // console.log('PageSpeed Analysis Results:', JSON.stringify(analysisResults?.technicalAnalysis?.pageSpeed, null, 2));
       
       // Calculate overall score
       const score = calculateOverallScore(analysisResults);
