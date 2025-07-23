@@ -13,5 +13,6 @@ router.post('/suggestions', keywordController.generateKeywordSuggestions);
 router.put('/:keywordId/ranking', keywordController.updateKeywordRanking);
 router.put('/:keywordId/refresh', keywordController.refreshKeywordRanking);
 router.delete('/:keywordId', keywordController.deleteKeyword);
+router.post('/clear-cache', keywordController.clearCache);
 
 module.exports = router;

@@ -78,11 +78,21 @@ class KeywordService {
   }
 
   // Get cached result
-  getCachedResult(keyword, domain) {
+  getCachedResult(keyword, domain, forceRefresh = false) {
+    if (forceRefresh) {
+      return null; // Skip cache entirely when force refresh is requested
+    }
+    
     const cacheKey = `${keyword}-${domain}`;
     const cached = this.cache.get(cacheKey);
     
     if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+      // Check if cached data has competitors - if not, invalidate cache to get fresh data
+      if (!cached.data.competitors || cached.data.competitors.length === 0) {
+        console.log(`💾 Cache hit but no competitors data - invalidating cache for "${keyword}"`);
+        this.cache.delete(cacheKey);
+        return null;
+      }
       console.log(`💾 Using cached result for "${keyword}"`);
       return cached.data;
     }
@@ -99,20 +109,34 @@ class KeywordService {
     });
   }
 
+  // Clear cache (for testing/debugging)
+  clearCache() {
+    this.cache.clear();
+    console.log('🗑️ Cache cleared');
+  }
+
   // Track keyword ranking using Google Custom Search API
-  async trackKeywordRanking(keyword, domain, targetUrl = null) {
+  async trackKeywordRanking(keyword, domain, options = {}) {
     try {
-      console.log(`Tracking ranking for keyword: ${keyword}, domain: ${domain}`);
+      const { forceRefresh = false } = options;
+      console.log(`Tracking ranking for keyword: ${keyword}, domain: ${domain}${forceRefresh ? ' (force refresh)' : ''}`);
       
-      // Normalize domain parameter
+      // Normalize domain parameter - extract domain from URL if needed
       if (!domain || domain === 'null' || domain === 'undefined') {
         domain = null;
+      } else if (domain.startsWith('http')) {
+        // Extract domain from URL
+        domain = this.extractDomain(domain);
       }
       
-      // Check cache first
-      const cachedResult = this.getCachedResult(keyword, domain);
-      if (cachedResult) {
-        return cachedResult;
+      // Check cache first (unless force refresh is requested)
+      if (!forceRefresh) {
+        const cachedResult = this.getCachedResult(keyword, domain, forceRefresh);
+        if (cachedResult) {
+          return cachedResult;
+        }
+      } else {
+        console.log(`🔄 Force refresh requested - bypassing cache for "${keyword}"`);
       }
       
       // Check circuit breaker
@@ -272,6 +296,9 @@ class KeywordService {
           trendyMessage = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
         }
         
+        // Extract top competitors from search results
+        const competitors = this.extractCompetitorsFromResults(searchResults, domain);
+        
         const result = {
           keyword,
           position: position || null,
@@ -283,7 +310,8 @@ class KeywordService {
           searchResultsCount: searchResults.length,
           domainFound: !!position,
           note: position ? null : (domain ? `🔍 ${domain} isn't ranking in top ${searchResults.length} yet - time to optimize!` : 'No domain specified'),
-          trendyMessage: trendyMessage
+          trendyMessage: trendyMessage,
+          competitors: competitors
         };
         
         // Cache the successful result
@@ -391,6 +419,13 @@ class KeywordService {
       trendyMessage = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
     }
     
+    // Generate mock competitors for fallback data
+    const mockCompetitors = [
+      { domain: 'competitor1.com', position: 1, title: 'Sample Result 1', url: 'https://competitor1.com' },
+      { domain: 'competitor2.com', position: 2, title: 'Sample Result 2', url: 'https://competitor2.com' },
+      { domain: 'competitor3.com', position: 3, title: 'Sample Result 3', url: 'https://competitor3.com' }
+    ];
+    
     return {
       keyword,
       position,
@@ -403,6 +438,7 @@ class KeywordService {
       domainFound: !!position,
       note: position ? `🚀 Mock ranking for ${domain}` : (domain ? `🔍 ${domain} isn't ranking in top 100 yet - time to optimize!` : 'No domain specified'),
       trendyMessage: trendyMessage,
+      competitors: mockCompetitors,
       isMockData: true
     };
   }
@@ -436,9 +472,9 @@ class KeywordService {
       console.log(`Processing batch ${i + 1}/${chunks.length}: ${chunk.join(', ')}`);
       
       try {
-        // Process chunk with concurrent requests
+        // Process chunk with concurrent requests - use force refresh for batch operations
         const chunkPromises = chunk.map(keyword => 
-          this.trackKeywordRanking(keyword, domain).catch(error => {
+          this.trackKeywordRanking(keyword, domain, { forceRefresh: true }).catch(error => {
             console.error(`Error tracking keyword "${keyword}":`, error.message);
             return this.generateMockRankingData(keyword, domain);
           })
@@ -483,8 +519,67 @@ class KeywordService {
     };
   }
 
+  // Extract competitors from search results
+  extractCompetitorsFromResults(searchResults, excludeDomain) {
+    const competitors = [];
+    let position = 1;
+    
+    console.log(`Extracting competitors from ${searchResults.length} search results, excluding: ${excludeDomain}`);
+    
+    for (const result of searchResults.slice(0, 15)) { // Check top 15 results to get 5 competitors
+      const domain = this.extractDomain(result.link);
+      
+      // Skip if this is the user's domain (more flexible matching)
+      if (excludeDomain) {
+        const normalizedExclude = excludeDomain.toLowerCase().replace(/^www\./, '');
+        const normalizedDomain = domain.toLowerCase().replace(/^www\./, '');
+        
+        if (normalizedDomain.includes(normalizedExclude) || normalizedExclude.includes(normalizedDomain)) {
+          console.log(`Skipping user's domain: ${domain} (position ${position})`);
+          position++;
+          continue;
+        }
+      }
+      
+      // Skip common non-competitive domains
+      const skipDomains = ['google.com', 'youtube.com', 'facebook.com', 'twitter.com', 'linkedin.com'];
+      if (skipDomains.some(skip => domain.includes(skip))) {
+        position++;
+        continue;
+      }
+      
+      competitors.push({
+        domain: domain,
+        position: position,
+        title: (result.title || 'Untitled').substring(0, 100), // Limit title length
+        url: result.link,
+        snippet: (result.snippet || '').substring(0, 200) // Limit snippet length
+      });
+      
+      console.log(`Added competitor: ${domain} at position ${position}`);
+      position++;
+      
+      // Stop after getting 5 competitors
+      if (competitors.length >= 5) break;
+    }
+    
+    console.log(`Extracted ${competitors.length} competitors`);
+    return competitors;
+  }
+
   // Get top competitors
   async getTopCompetitors(keyword, excludeDomain) {
+    // Try to get real data by performing a search with force refresh
+    try {
+      const rankingData = await this.trackKeywordRanking(keyword, excludeDomain, { forceRefresh: true });
+      if (rankingData && rankingData.competitors && rankingData.competitors.length > 0) {
+        return rankingData.competitors;
+      }
+    } catch (error) {
+      console.log('Could not get real competitor data, using fallback');
+    }
+    
+    // Fallback to sample data if API is unavailable
     return [
       { domain: 'competitor1.com', position: 1, title: 'Sample Result 1', url: 'https://competitor1.com' },
       { domain: 'competitor2.com', position: 2, title: 'Sample Result 2', url: 'https://competitor2.com' },

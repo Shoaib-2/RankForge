@@ -16,8 +16,8 @@ const keywordController = {
 
       console.log(`Adding keyword tracking for: ${keyword}, domain: ${domain || 'none'}`);
 
-      // Get real keyword ranking data
-      const rankingData = await keywordService.trackKeywordRanking(keyword, domain || 'example.com');
+      // Get real keyword ranking data with force refresh to ensure fresh competitor data
+      const rankingData = await keywordService.trackKeywordRanking(keyword, domain || 'example.com', { forceRefresh: true });
       
       // Generate 7 days of historical data (mix of real and simulated)
       const historicalRankings = [];
@@ -62,8 +62,8 @@ const keywordController = {
         });
       }
 
-      // Get competitor data
-      const competitors = await keywordService.getTopCompetitors(keyword, domain || 'example.com');
+      // Get competitor data from the ranking results
+      const competitors = rankingData.competitors || [];
 
       // Create new keyword tracking with real data
       const newKeyword = new Keyword({
@@ -211,10 +211,11 @@ const keywordController = {
 
       console.log(`🔄 User explicitly requested ranking refresh for keyword: ${keyword.keyword}`);
       
-      // Only make API call when user explicitly requests refresh
+      // Only make API call when user explicitly requests refresh - use force refresh for fresh data
       const newRanking = await keywordService.trackKeywordRanking(
         keyword.keyword, 
-        keyword.domain || 'example.com'
+        keyword.domain || 'example.com',
+        { forceRefresh: true }
       );
 
       // Add new ranking to history
@@ -224,6 +225,11 @@ const keywordController = {
         searchVolume: newRanking.searchVolume,
         trendyMessage: newRanking.trendyMessage
       });
+
+      // Update competitors with fresh data if available
+      if (newRanking.competitors && newRanking.competitors.length > 0) {
+        keyword.competitors = newRanking.competitors;
+      }
 
       // Keep only last 30 days of data
       if (keyword.rankings.length > 30) {
@@ -316,6 +322,16 @@ const keywordController = {
     }
   },
 
+  // Clear cache (for debugging)
+  async clearCache(req, res) {
+    try {
+      keywordService.clearCache();
+      res.json({ message: 'Cache cleared successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Error clearing cache' });
+    }
+  },
+
   async batchTrackKeywords(req, res) {
     try {
       const { keywords, domain, maxConcurrent = 2 } = req.body;
@@ -367,6 +383,7 @@ const keywordController = {
             url: rankingData.url,
             searchVolume: rankingData.searchVolume,
             difficulty: rankingData.difficulty,
+            competitors: rankingData.competitors || [],
             rankings: historicalRankings,
             lastUpdated: new Date(),
             trendyMessage: rankingData.trendyMessage,
