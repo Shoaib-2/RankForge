@@ -19,7 +19,8 @@ RateLimitCleanup.startScheduler();
 // CORS configuration to allow frontend to communicate with backend
 const corsOptions = {
   origin: [
-    process.env.FRONTEND_URL,
+    process.env.FRONTEND_URL?.replace(/\/$/, ''),
+    process.env.FRONTEND_URL?.replace(/\/$/, '') + '/',
   ],
   credentials: true,
   optionsSuccessStatus: 200,
