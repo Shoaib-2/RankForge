@@ -420,7 +420,19 @@ const SEOAnalysis = () => {
             </div>
 
             {/* Export Options */}
-            <ExportOptions analysisData={results} />
+            {/* Pass all available analysis data to ExportOptions for export */}
+            <ExportOptions
+              analysisData={{
+                url,
+                score: results?.score,
+                recommendations: results?.recommendations,
+                analysis: results?.analysis,
+                pageSpeed: results?.analysis?.technical?.pageSpeed,
+                aiInsights: results?.aiInsights,
+                aiUsage: results?.aiUsage,
+               
+              }}
+            />
           </motion.div>
         )}
       </motion.div>
