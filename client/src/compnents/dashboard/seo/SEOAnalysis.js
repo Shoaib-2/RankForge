@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { useSEO } from '../../../context/SeoContext';
@@ -212,29 +212,48 @@ const SEOAnalysis = () => {
                 disabled={loading}
               />
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-              <button
-                type="submit"
-                disabled={loading || !url.trim()}
-                className="export-button w-full sm:w-auto"
-              >
-                {loading ? (
-                  <>
-                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
+            <div className="flex justify-center items-center w-full mt-2">
+              {!loading ? (
+                <button
+                  type="submit"
+                  disabled={loading || !url.trim()}
+                  className="export-button px-8 py-3 rounded-lg flex items-center justify-center"
+                  style={{ margin: '0 auto' }}
+                >
+                  <SparklesIcon className="w-5 h-5 mr-2" />
+                  Analyze
+                </button>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.5 }}
+                  className="flex flex-col items-center justify-center w-full"
+                >
+                  <motion.div
+                    initial={{ rotate: 0 }}
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                    className="mb-2"
+                  >
+                    <ArrowPathIcon className="w-8 h-8 text-blue-500" />
+                  </motion.div>
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.7 }}
+                    className="text-blue-600 font-semibold text-base"
+                  >
                     Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <SparklesIcon className="w-5 h-5" />
-                    Analyze
-                  </>
-                )}
-              </button>
-              {results && (
+                  </motion.span>
+                </motion.div>
+              )}
+              {results && !loading && (
                 <button
                   type="button"
                   onClick={clearAnalysis}
-                  className="export-button w-full sm:w-auto"
+                  className="export-button ml-4 px-8 py-3 rounded-lg"
                   style={{ background: 'linear-gradient(135deg, #6b7280, #4b5563)' }}
                 >
                   Clear

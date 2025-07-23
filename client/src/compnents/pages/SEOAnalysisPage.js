@@ -1,6 +1,6 @@
-import React from 'react';
+
 import SEOAnalysis from '../dashboard/seo/SEOAnalysis';
-import { InformationCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 const SEOAnalysisPage = () => {
   return (
