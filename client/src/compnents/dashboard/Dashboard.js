@@ -82,7 +82,7 @@ const Dashboard = () => {
       issues: { count: 12, highPriority: 3, change: -8.2 }
     };
     
-    console.log('Setting demo stats:', demoStats);
+    // console.log('Setting demo stats:', demoStats);
     setStats(demoStats);
     setLastUpdated(new Date());
     setLoading(false);
