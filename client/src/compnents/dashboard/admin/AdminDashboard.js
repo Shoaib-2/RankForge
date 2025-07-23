@@ -29,7 +29,7 @@ const AdminDashboard = () => {
     try {
       const token = authService.getToken();
       const response = await axios.get(
-        'http://localhost:5000/api/seo/ai/usage-stats',
+        `${process.env.REACT_APP_API_URL}/seo/ai/usage-stats`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }

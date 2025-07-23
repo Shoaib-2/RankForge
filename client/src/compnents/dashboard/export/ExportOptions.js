@@ -29,7 +29,7 @@ const ExportOptions = ({ analysisData }) => {
       setLoading(true);
       const token = authService.getToken();
       const response = await axios.post(
-        'http://localhost:5000/api/export/pdf',
+        `${process.env.REACT_APP_API_URL}/export/pdf`,
         { analysisData },
         {
           headers: {
@@ -69,7 +69,7 @@ const handleExportCSV = async () => {
     
     const response = await axios({
       method: 'post',
-      url: 'http://localhost:5000/api/export/csv',
+      url: `${process.env.REACT_APP_API_URL}/export/csv`,
       data: { analysisData },
       headers: {
         Authorization: `Bearer ${token}`,
@@ -106,7 +106,7 @@ const handleExportExcel = async () => {
     
     const response = await axios({
       method: 'post',
-      url: 'http://localhost:5000/api/export/excel',
+      url: `${process.env.REACT_APP_API_URL}/export/excel`,
       data: { analysisData },
       headers: {
         Authorization: `Bearer ${token}`,
@@ -144,7 +144,7 @@ const handleEmailReport = async (e) => {
     
     await axios({
       method: 'post',
-      url: 'http://localhost:5000/api/export/email-report',
+      url: `${process.env.REACT_APP_API_URL}/export/email-report`,
       data: { 
         email,
         analysisData 

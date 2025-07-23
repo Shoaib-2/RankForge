@@ -42,7 +42,7 @@ const Dashboard = () => {
       
       // Fetch both dashboard stats and performance metrics
       const [statsResponse, metricsResponse] = await Promise.all([
-        axios.get('http://localhost:5000/api/dashboard/stats', {
+        axios.get(`${process.env.REACT_APP_API_URL}/dashboard/stats`, {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             startDate: dateRange.startDate.toISOString(),

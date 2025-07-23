@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Load environment variables (React automatically loads .env files)
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const authService = {
   // Set up axios interceptors for automatic token handling

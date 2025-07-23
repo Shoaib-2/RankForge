@@ -34,7 +34,7 @@ export const SEOProvider = ({ children }) => {
       
       // Use the new AI availability endpoint for accurate rate limit status
       const response = await axios.create().get(
-        'http://localhost:5000/api/seo/ai/availability',
+        `${process.env.REACT_APP_API_URL}/seo/ai/availability`,
         {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 5000 // 5 second timeout

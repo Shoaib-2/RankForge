@@ -19,12 +19,7 @@ RateLimitCleanup.startScheduler();
 // CORS configuration to allow frontend to communicate with backend
 const corsOptions = {
   origin: [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3001',
     process.env.FRONTEND_URL,
-    'https://seo-tool-eta.vercel.app'
   ],
   credentials: true,
   optionsSuccessStatus: 200,
@@ -149,7 +144,7 @@ connectToMongoDB().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 SEO Tool Server running on port ${PORT}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`🔗 Health check: ${process.env.BACKEND_URL}/api/health`);
   });
 }).catch((err) => {
   logger.error('Failed to start server:', { error: err.message, stack: err.stack });

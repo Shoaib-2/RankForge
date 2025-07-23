@@ -53,7 +53,7 @@ const SEOAnalysis = () => {
     try {
       const token = authService.getToken();
       const response = await axios.post(
-        'http://localhost:5000/api/seo/analyze',
+        `${process.env.REACT_APP_API_URL}/seo/analyze`,
         { url },
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -110,7 +110,7 @@ const SEOAnalysis = () => {
     try {
       const token = authService.getToken();
       const response = await axios.post(
-        `http://localhost:5000/api/seo/ai/insights/${analysisId}`,
+        `${process.env.REACT_APP_API_URL}/seo/ai/insights/${analysisId}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` }

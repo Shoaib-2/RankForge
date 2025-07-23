@@ -58,7 +58,7 @@ const KeywordTracker = () => {
   const fetchKeywords = async () => {
     try {
       const token = authService.getToken();
-      const response = await axios.get('http://localhost:5000/api/keywords/list', {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/keywords/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setKeywords(response.data);
@@ -109,7 +109,7 @@ const KeywordTracker = () => {
       setLoadingSuggestions(true);
       const token = authService.getToken();
       const response = await axios.post(
-        'http://localhost:5000/api/keywords/suggestions',
+        `${process.env.REACT_APP_API_URL}/keywords/suggestions`,
         { 
           seedKeyword: newKeyword.trim(),
           domain: domain.trim() || null
@@ -151,7 +151,7 @@ const KeywordTracker = () => {
       
       const token = authService.getToken();
       const response = await axios.post(
-        'http://localhost:5000/api/keywords/add',
+        `${process.env.REACT_APP_API_URL}/keywords/add`,
         { 
           keyword: newKeyword.trim(),
           domain: domain.trim() || null
@@ -194,7 +194,7 @@ const KeywordTracker = () => {
       
       const token = authService.getToken();
       const response = await axios.post(
-        'http://localhost:5000/api/keywords/add',
+        `${process.env.REACT_APP_API_URL}/keywords/add`,
         { 
           keyword: suggestedKeyword,
           domain: domain.trim() || null
@@ -219,7 +219,7 @@ const KeywordTracker = () => {
   const deleteKeyword = async (keywordId) => {
     try {
       const token = authService.getToken();
-      await axios.delete(`http://localhost:5000/api/keywords/${keywordId}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/keywords/${keywordId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setKeywords(keywords.filter(k => k._id !== keywordId));
