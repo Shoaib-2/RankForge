@@ -64,7 +64,7 @@ const KeywordTracker = () => {
       setKeywords(response.data);
       setError('');
     } catch (error) {
-      console.error('Keywords fetch error:', error);
+      // console.error('Keywords fetch error:', error);
       setError('Using demo keyword data - API unavailable');
       
       // Set mock keyword data with enhanced structure
@@ -122,7 +122,7 @@ const KeywordTracker = () => {
       setSuggestions(response.data.suggestions);
       setShowSuggestions(true);
     } catch (error) {
-      console.error('Error generating suggestions:', error);
+      // console.error('Error generating suggestions:', error);
       // Fallback suggestions
       const fallbackSuggestions = [
         { keyword: `best ${newKeyword}`, searchVolume: 5000, difficulty: 45, estimatedPosition: null },
@@ -171,7 +171,7 @@ const KeywordTracker = () => {
       setSuggestions([]);
       
     } catch (error) {
-      console.error('Add keyword error:', error);
+      // console.error('Add keyword error:', error);
       
       // Check if it\'s a rate limit error
       if (error.response?.status === 429) {
@@ -209,7 +209,7 @@ const KeywordTracker = () => {
       setSuggestions([]);
       
     } catch (error) {
-      console.error('Add suggested keyword error:', error);
+      // console.error('Add suggested keyword error:', error);
       setError('Error adding suggested keyword');
     } finally {
       setLoading(false);
@@ -224,7 +224,7 @@ const KeywordTracker = () => {
       });
       setKeywords(keywords.filter(k => k._id !== keywordId));
     } catch (error) {
-      console.error('Error deleting keyword:', error);
+      // console.error('Error deleting keyword:', error);
     }
   };
 

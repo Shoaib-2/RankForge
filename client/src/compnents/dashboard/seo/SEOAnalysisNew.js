@@ -83,7 +83,7 @@ const SEOAnalysis = () => {
       setAnalysisId(analysisId);
 
     } catch (error) {
-      console.error('Analysis error:', error);
+      // console.error('Analysis error:', error);
       setError('Error analyzing website. Please try again.');
     } finally {
       setLoading(false);
@@ -128,7 +128,7 @@ const SEOAnalysis = () => {
       }));
 
     } catch (error) {
-      console.error('AI Insights error:', error);
+      // console.error('AI Insights error:', error);
       
       if (error.response?.status === 429) {
         setError('🚫 Rate limit reached! You have used all 10 free AI analyses. The limit will reset in 24 hours.');

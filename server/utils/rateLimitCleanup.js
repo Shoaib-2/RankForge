@@ -21,12 +21,12 @@ class RateLimitCleanup {
       });
       
       if (result.deletedCount > 0) {
-        logger.info(`Cleaned up ${result.deletedCount} expired rate limit records`);
+        // logger.info(`Cleaned up ${result.deletedCount} expired rate limit records`);
       }
       
       return result.deletedCount;
     } catch (error) {
-      logger.error('Error cleaning up expired rate limit records:', error);
+      // logger.error('Error cleaning up expired rate limit records:', error);
       return 0;
     }
   }
@@ -56,7 +56,7 @@ class RateLimitCleanup {
         cleanupRecommended: expiredRecords > 100
       };
     } catch (error) {
-      logger.error('Error getting rate limit stats:', error);
+      // logger.error('Error getting rate limit stats:', error);
       return { total: 0, today: 0, expired: 0, cleanupRecommended: false };
     }
   }
@@ -70,10 +70,10 @@ class RateLimitCleanup {
         service: 'ai_analysis'
       });
       
-      logger.warn(`Emergency reset: Deleted ${result.deletedCount} rate limit records`);
+      // logger.warn(`Emergency reset: Deleted ${result.deletedCount} rate limit records`);
       return result.deletedCount;
     } catch (error) {
-      logger.error('Error during emergency reset:', error);
+      // logger.error('Error during emergency reset:', error);
       return 0;
     }
   }
@@ -87,7 +87,7 @@ class RateLimitCleanup {
       await this.cleanupExpiredRecords();
     }, 60 * 60 * 1000); // 1 hour
 
-    logger.info('Rate limit cleanup scheduler started (runs every hour)');
+    // logger.info('Rate limit cleanup scheduler started (runs every hour)');
   }
 
   /**
@@ -119,7 +119,7 @@ class RateLimitCleanup {
         uniqueIPs: item.uniqueIPs.length
       }));
     } catch (error) {
-      logger.error('Error getting service breakdown:', error);
+      // logger.error('Error getting service breakdown:', error);
       return [];
     }
   }

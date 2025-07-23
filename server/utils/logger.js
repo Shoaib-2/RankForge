@@ -43,7 +43,7 @@ class Logger {
     if (!this.shouldLog('ERROR')) return;
     
     const logMessage = this.formatMessage('ERROR', message, meta);
-    console.error(logMessage.trim());
+    // console.error(logMessage.trim());
     this.writeToFile('error.log', logMessage);
     this.writeToFile('combined.log', logMessage);
   }
@@ -52,7 +52,7 @@ class Logger {
     if (!this.shouldLog('WARN')) return;
     
     const logMessage = this.formatMessage('WARN', message, meta);
-    console.warn(logMessage.trim());
+    // console.warn(logMessage.trim());
     this.writeToFile('combined.log', logMessage);
   }
 
@@ -60,7 +60,7 @@ class Logger {
     if (!this.shouldLog('INFO')) return;
     
     const logMessage = this.formatMessage('INFO', message, meta);
-    console.log(logMessage.trim());
+    // console.log(logMessage.trim());
     this.writeToFile('combined.log', logMessage);
   }
 
@@ -68,7 +68,7 @@ class Logger {
     if (!this.shouldLog('DEBUG')) return;
     
     const logMessage = this.formatMessage('DEBUG', message, meta);
-    console.log(logMessage.trim());
+    // console.log(logMessage.trim());
     this.writeToFile('debug.log', logMessage);
   }
 
@@ -107,7 +107,7 @@ class Logger {
       ...meta
     });
     
-    console.warn(logMessage.trim());
+    // console.warn(logMessage.trim());
     this.writeToFile('security.log', logMessage);
     this.writeToFile('combined.log', logMessage);
   }

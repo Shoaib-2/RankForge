@@ -95,9 +95,9 @@ const authService = {
 
   async login(credentials) {
     try {
-      console.log('Making login request to:', `${API_URL}/auth/login`);
-      console.log('API_URL:', API_URL);
-      console.log('Credentials:', credentials);
+      // console.log('Making login request to:', `${API_URL}/auth/login`);
+      // console.log('API_URL:', API_URL);
+      // console.log('Credentials:', credentials);
       
       const response = await axios.post(`${API_URL}/auth/login`, credentials, {
         timeout: 10000 // 10 second timeout
@@ -111,7 +111,7 @@ const authService = {
       }
       return response.data;
     } catch (error) {
-      console.error('Login error:', error.response?.data || error.message);
+      // console.error('Login error:', error.response?.data || error.message);
       throw error;
     }
   },
@@ -146,7 +146,7 @@ const authService = {
       const user = localStorage.getItem('user');
       return user ? JSON.parse(user) : null;
     } catch (error) {
-      console.error('Error parsing user data from localStorage:', error);
+      // console.error('Error parsing user data from localStorage:', error);
       return null;
     }
   },

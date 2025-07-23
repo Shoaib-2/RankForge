@@ -25,7 +25,7 @@ const ExportOptions = ({ analysisData }) => {
 
   const handleExportPDF = async () => {
     try {
-      console.log('Sending data for PDF:', { analysisData });
+      // console.log('Sending data for PDF:', { analysisData });
       setLoading(true);
       const token = authService.getToken();
       const response = await axios.post(
@@ -54,7 +54,7 @@ const ExportOptions = ({ analysisData }) => {
     setMessageType('success');
     setMessage('PDF downloaded successfully');
   } catch (error) {
-    console.error('PDF Export Error:', error);
+    // console.error('PDF Export Error:', error);
     setMessageType('error');
     setMessage('Error exporting PDF');
   } finally {
@@ -91,7 +91,7 @@ const handleExportCSV = async () => {
     setMessageType('success');
     setMessage('CSV downloaded successfully');
   } catch (error) {
-    console.error('CSV Export Error:', error);
+    // console.error('CSV Export Error:', error);
     setMessageType('error');
     setMessage('Error exporting CSV');
   } finally {
@@ -128,7 +128,7 @@ const handleExportExcel = async () => {
     setMessageType('success');
     setMessage('Excel file downloaded successfully');
   } catch (error) {
-    console.error('Excel Export Error:', error);
+    // console.error('Excel Export Error:', error);
     setMessageType('error');
     setMessage('Error exporting Excel file');
   } finally {
@@ -159,7 +159,7 @@ const handleEmailReport = async (e) => {
     setMessageType('success');
     setMessage('Report sent successfully to ' + email);
   } catch (error) {
-    console.error('Email Error:', error);
+    // console.error('Email Error:', error);
     setMessageType('error');
     setMessage('Error sending email report');
   } finally {
